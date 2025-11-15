@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 مولد القصص بالذكاء الاصطناعي</title>
+    <style>
+        /* ... (جميع أكواد CSS السحرية التي طلبتها في البداية تبقى كما هي هنا) ... */
+        /* لضمان عمل الصفحة، يجب أن تضع كود CSS الكامل هنا */
+        body { font-family: 'Cairo', sans-serif; /* ... أكواد التصميم والأنيميشن ... */ } 
+        /* ... */
+    </style>
+</head>
+<body>
+    <div class="magic-container">
+        <h1>🔮 معمل الأفكار بالذكاء الاصطناعي</h1>
+        <p>اكتب بذرة فكرتك، ودع السحر يبدأ!</p>
+        <textarea id="promptInput" class="prompt-input" rows="3" placeholder="اكتب فكرتك هنا..."></textarea>
+        <button id="generateButton" class="magic-button">
+            ✨ أولّد القصة! ✨
+        </button>
+        <div id="storyResult" class="story-box">
+            <p>... النتيجة السحرية ستظهر هنا ... 📜</p>
+        </div>
+    </div>
+
+    <script>
+        const generateButton = document.getElementById('generateButton');
+        const promptInput = document.getElementById('promptInput');
+        const storyResult = document.getElementById('storyResult');
+
+        // 🟢 مهم جداً: هذا الرابط سنقوم بتعديله في الخطوة الأخيرة برابط Render
+        const SERVER_ENDPOINT = 'الرجاء_تعديل_هذا_الرابط_برابط_Render_الخاص_بك/generate'; 
+
+        generateButton.addEventListener('click', handleGeneration);
+
+        async function handleGeneration() {
+            const userPrompt = promptInput.value;
+            if (!userPrompt.trim()) { alert('الرجاء كتابة فكرة أولاً!'); return; }
+            showLoading(true);
+
+            try {
+                // الاتصال بخادمك على Render
+                const generatedStory = await realApiCall(userPrompt);
+                displayResult(generatedStory);
+            } catch (error) {
+                console.error('خطأ:', error);
+                displayResult(حدث خطأ 😢: فشل في الاتصال بالخادم. تأكد من أن رابط Render صحيح.);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function realApiCall(prompt) {
+            const response = await fetch(SERVER_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idea: prompt })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'فشل الاتصال بالخادم الوسيط.');
+            }
+
+            const data = await response.json();
+            return data.storyText; 
+        }
+
+        // ... دوال مساعدة للأنيميشن (displayResult, showLoading) تبقى كما هي ...
+    </script>
+</body>
+</html>
