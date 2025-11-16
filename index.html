@@ -5,10 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔮 مولد القصص بالذكاء الاصطناعي</title>
     <style>
-        /* ... (جميع أكواد CSS السحرية التي طلبتها في البداية تبقى كما هي هنا) ... */
-        /* لضمان عمل الصفحة، يجب أن تضع كود CSS الكامل هنا */
-        body { font-family: 'Cairo', sans-serif; /* ... أكواد التصميم والأنيميشن ... */ } 
-        /* ... */
+        /* ... (كود CSS كامل) ... */
+        body {
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            text-align: center;
+            background: linear-gradient(270deg, #1f005c, #0d0025, #001f3f, #004d40);
+            background-size: 800% 800%;
+            animation: magicGradient 20s ease infinite;
+        }
+
+        @keyframes magicGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .magic-container {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 20px;
+            animation: fadeIn 1s ease-out;
+            width: 90%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px #ffffff, 0 0 20px #8a2be2;
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-bottom: 20px;
+            box-sizing: border-box; 
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.7);
+        }
+
+        .magic-button {
+            background-image: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(106, 17, 203, 0.7); }
+            100% { transform: scale(1); box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4); }
+        }
+
+        .magic-button.loading {
+            cursor: not-allowed;
+            animation: none;
+            background: #555;
+        }
+
+        .story-box {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px dashed #ffffff;
+            min-height: 100px;
+            text-align: right; 
+            line-height: 1.7;
+            white-space: pre-wrap; 
+        }
+        
+        .story-box.show {
+            animation: textPopIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes textPopIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -29,8 +133,8 @@
         const promptInput = document.getElementById('promptInput');
         const storyResult = document.getElementById('storyResult');
 
-        // 🟢 مهم جداً: هذا الرابط سنقوم بتعديله في الخطوة الأخيرة برابط Render
-        const SERVER_ENDPOINT = 'الرجاء_تعديل_هذا_الرابط_برابط_Render_الخاص_بك/generate'; 
+        // 🟢 Vercel تتوقع نقطة اتصال بهذا المسار
+        const SERVER_ENDPOINT = '/api/generate'; 
 
         generateButton.addEventListener('click', handleGeneration);
 
@@ -40,12 +144,12 @@
             showLoading(true);
 
             try {
-                // الاتصال بخادمك على Render
+                // الاتصال بخادم Vercel
                 const generatedStory = await realApiCall(userPrompt);
                 displayResult(generatedStory);
             } catch (error) {
                 console.error('خطأ:', error);
-                displayResult(حدث خطأ 😢: فشل في الاتصال بالخادم. تأكد من أن رابط Render صحيح.);
+                displayResult(حدث خطأ 😢: فشل في الاتصال بالخادم. تأكد من إعداد المفتاح السري في Vercel.);
             } finally {
                 showLoading(false);
             }
@@ -67,7 +171,24 @@
             return data.storyText; 
         }
 
-        // ... دوال مساعدة للأنيميشن (displayResult, showLoading) تبقى كما هي ...
+        function displayResult(storyText) {
+            storyResult.innerHTML = <p>${storyText}</p>;
+            storyResult.classList.remove('show');
+            void storyResult.offsetWidth; 
+            storyResult.classList.add('show');
+        }
+
+        function showLoading(isLoading) {
+            if (isLoading) {
+                generateButton.disabled = true;
+                generateButton.classList.add('loading');
+                generateButton.textContent = 'جاري التوليد ... 🪄';
+            } else {
+                generateButton.disabled = false;
+                generateButton.classList.remove('loading');
+                generateButton.textContent = '✨ أولّد القصة! ✨';
+            }
+        }
     </script>
 </body>
 </html>
