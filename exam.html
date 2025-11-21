@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>صفحة الامتحان</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body { font-family: Tahoma, sans-serif; background: #f0f2f5; padding: 20px; min-height: 100vh; cursor: pointer; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; z-index: 10; cursor: default; }
         
         /* شاشة البداية */
         #startScreen, #resultScreen { text-align: center; }
@@ -38,8 +38,8 @@
     <!-- 1. شاشة تسجيل الاسم -->
     <div id="startScreen">
         <h2 id="examTitleDisplay">جاري تحميل الامتحان...</h2>
-        <p>يرجى إدخال اسمك للبدء</p>
-        <input type="text" id="studentName" placeholder="الاسم الثلاثي">
+        <p>أدخل اسمك للبدء</p>
+        <input type="text" id="studentName" placeholder="اكتب اسمك هنا">
         <br>
         <button class="btn btn-start" onclick="startExam()">بدء الامتحان</button>
     </div>
@@ -63,6 +63,9 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
+  // رابط الإعلان الخاص بك
+  const AD_LINK = "https://www.effectivegatecpm.com/k8fisnjjc?key=afa7ea920578f74cea5997d670bbe78e";
+
   const firebaseConfig = {
     apiKey: "AIzaSyCsnZdFrg-KlWFc0z6OgmXgBp6lPKf14fU",
     authDomain: "saifsa-b51f1.firebaseapp.com",
@@ -81,7 +84,15 @@
   const urlParams = new URLSearchParams(window.location.search);
   const examId = urlParams.get('id');
 
-  // تحميل بيانات الامتحان عند فتح الصفحة
+  // كود فتح الإعلان عند الضغط في أي مكان خارج الكونتينر (الخلفية)
+  document.addEventListener('click', function(event) {
+      const container = document.querySelector('.container');
+      // إذا كان العنصر الذي تم الضغط عليه ليس داخل الكونتينر
+      if (!container.contains(event.target)) {
+          window.open(AD_LINK, '_blank');
+      }
+  });
+
   window.onload = async function() {
       if(!examId) {
           document.body.innerHTML = "<h3 style='text-align:center; margin-top:50px;'>رابط الامتحان غير صحيح</h3>";
@@ -104,17 +115,15 @@
   };
 
   window.startExam = function() {
-      const name = document.getElementById('studentName').value;
-      if(!name) { alert("الرجاء كتابة الاسم"); return; }
+      const name = document.getElementById('studentName').value.trim();
+      if(!name) { alert("يجب كتابة الاسم قبل البدء!"); return; }
 
-      // إخفاء شاشة البداية وإظهار الأسئلة
       document.getElementById('startScreen').style.display = 'none';
       document.getElementById('quizScreen').style.display = 'block';
 
       const list = document.getElementById('questionsList');
       list.innerHTML = '';
 
-      // عرض الأسئلة تحت بعض
       examData.questions.forEach((q, index) => {
           let optionsHTML = '';
           q.options.forEach((opt, optIndex) => {
@@ -127,8 +136,8 @@
           });
 
           const qHTML = `
-            <div class="question-card">
-                <div class="question-text">${index + 1}. ${q.text}</div>
+            <div class="question-card" id="card_${index}">
+                <div class="question-text">${index + 1}. ${q.text} <span style="color:red; font-size:12px">* مطلوب</span></div>
                 <div class="options-list">${optionsHTML}</div>
             </div>
           `;
@@ -137,12 +146,39 @@
   };
 
   window.submitExam = function() {
+      // 1. التحقق من حل جميع الأسئلة
+      let allAnswered = true;
+      let firstUnansweredIndex = -1;
+
+      for(let i=0; i < examData.questions.length; i++) {
+          const selected = document.querySelector(`input[name="q${i}"]:checked`);
+          if(!selected) {
+              allAnswered = false;
+              firstUnansweredIndex = i;
+              break;
+          }
+      }
+
+      if(!allAnswered) {
+          alert("يجب حل جميع الأسئلة قبل التسليم!");
+          // التمرير للسؤال غير المحلول
+          const card = document.getElementById('card_' + firstUnansweredIndex);
+          card.scrollIntoView({behavior: "smooth"});
+          card.style.border = "2px solid red"; // تمييز السؤال
+          return;
+      }
+
       if(!confirm("هل أنت متأكد من تسليم الإجابة؟")) return;
 
+      // 2. فتح الإعلان بعد ثانية واحدة (1000 مللي ثانية)
+      setTimeout(() => {
+          window.open(AD_LINK, '_blank');
+      }, 1000);
+
+      // 3. حساب وعرض النتيجة
       let score = 0;
       const total = examData.questions.length;
 
-      // حساب النتيجة
       examData.questions.forEach((q, index) => {
           const selected = document.querySelector(`input[name="q${index}"]:checked`);
           if(selected && parseInt(selected.value) === q.correctIndex) {
@@ -152,7 +188,6 @@
 
       const percentage = (score / total) * 100;
 
-      // عرض النتيجة
       document.getElementById('quizScreen').style.display = 'none';
       document.getElementById('resultScreen').style.display = 'block';
       
@@ -161,10 +196,10 @@
 
       const msgElement = document.getElementById('feedbackMessage');
       if(percentage >= 50) {
-          msgElement.innerText = "ممتاز يا بطل! أنت رائع 🔥";
+          msgElement.innerText = "ممتاز! نتيجة رائعة 🔥";
           msgElement.className = "msg-good";
       } else {
-          msgElement.innerText = "حظ أوفر المرة القادمة، ركز أكثر 💪";
+          msgElement.innerText = "حظ أوفر المرة القادمة 💪";
           msgElement.className = "msg-bad";
       }
   };
