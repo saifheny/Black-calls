@@ -35,7 +35,6 @@
 <body>
 
 <div class="container">
-    <!-- 1. شاشة تسجيل الاسم -->
     <div id="startScreen">
         <h2 id="examTitleDisplay">جاري تحميل الامتحان...</h2>
         <p>يرجى إدخال اسمك للبدء</p>
@@ -44,13 +43,11 @@
         <button class="btn btn-start" onclick="startExam()">بدء الامتحان</button>
     </div>
 
-    <!-- 2. شاشة الأسئلة -->
     <div id="quizScreen">
         <div id="questionsList"></div>
         <button class="btn btn-submit" onclick="submitExam()">تسليم الإجابة</button>
     </div>
 
-    <!-- 3. شاشة النتيجة -->
     <div id="resultScreen">
         <h2>نتيجة الامتحان</h2>
         <p id="studentNameDisplay"></p>
@@ -144,7 +141,7 @@
 
       // حساب النتيجة
       examData.questions.forEach((q, index) => {
-          const selected = document.querySelector(`input[name="q${index}"]:checked`);
+          const selected = document.querySelector(input[name="q${index}"]:checked);
           if(selected && parseInt(selected.value) === q.correctIndex) {
               score++;
           }
@@ -157,7 +154,7 @@
       document.getElementById('resultScreen').style.display = 'block';
       
       document.getElementById('studentNameDisplay').innerText = "الطالب: " + document.getElementById('studentName').value;
-      document.getElementById('scoreDisplay').innerText = `الدرجة: ${score} من ${total}`;
+      document.getElementById('scoreDisplay').innerText = الدرجة: ${score} من ${total};
 
       const msgElement = document.getElementById('feedbackMessage');
       if(percentage >= 50) {
