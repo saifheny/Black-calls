@@ -16,7 +16,7 @@
         .btn-add { background: #28a745; color: white; }
         .btn-save { background: #007bff; color: white; width: 100%; margin-top: 20px; }
         #examLinkArea { margin-top: 20px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; display: none; text-align: center; }
-        a { font-weight: bold; color: #155724; }
+        a { font-weight: bold; color: #155724; word-break: break-all; } /* تم إضافة word-break هنا */
     </style>
 </head>
 <body>
@@ -29,8 +29,7 @@
     </div>
 
     <div id="questionsContainer">
-        <!-- هنا ستضاف الأسئلة -->
-    </div>
+        </div>
 
     <button class="btn-add" onclick="addQuestion()">+ أضف سؤال</button>
     <button class="btn-save" onclick="saveExam()">حفظ الامتحان وإنشاء الرابط</button>
@@ -121,8 +120,8 @@
           createdAt: Date.now()
       }).then(() => {
           const examId = newExamRef.key;
-          // افترضنا أن ملف الطالب اسمه exam.html وموجود بجانب هذا الملف
-          const link = `${window.location.href.replace('admin.html', 'exam.html')}?id=${examId}`;
+          // تم تعديل الرابط لاستخدام window.location.origin للحصول على النطاق الأساسي
+          const link = ${window.location.origin}/free/exam.html?id=${examId};
           
           document.getElementById('generatedLink').href = link;
           document.getElementById('generatedLink').innerText = link;
