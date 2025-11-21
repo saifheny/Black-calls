@@ -3,1052 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saif TV</title>
+    <title>لوحة تحكم المعلم - إنشاء امتحان</title>
     <style>
-        :root {
-            --primary: #0f0f0f; --secondary: #1f1f1f;
-            --text: #ffffff; --accent: #e50914; --gray: #b3b3b3;
-            --skeleton-base: #333; /* لون الهيكل الأساسي */
-            --skeleton-highlight: #444; /* لون التظليل */
-        }
-        body {
-            font-family: 'Tajawal', sans-serif; margin: 0; color: var(--text);
-            background-color: var(--primary); 
-            overflow-x: hidden; 
-        }
-        /* (تحسين السرعة) - التأكد من تحميل الخط بشكل جيد */
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
-        
-        /* Header & Search */
-        header { 
-            background: rgba(15,15,15,0.95); padding: 15px 5%; position: fixed; width: 90%; 
-            top: 0; z-index: 1000; backdrop-filter: blur(10px); border-bottom: 1px solid #333; 
-            display: flex; justify-content: space-between; align-items: center; 
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            justify-content: space-between;
-            flex-direction: row-reverse; 
-        }
-
-        .logo { 
-            font-size: 2em; 
-            font-weight: 800; 
-            color: var(--accent); 
-            letter-spacing: 1px;
-            transition: font-size 0.3s ease; 
-            white-space: nowrap; 
-        }
-
-        /* --- Compact Search Styles --- */
-        .search-container {
-            position: relative;
-            margin-left: auto; 
-        }
-        #search-input {
-            width: 200px; 
-            padding: 8px 15px; 
-            border-radius: 20px; 
-            border: 1px solid #444;
-            background-color: var(--secondary);
-            color: var(--text);
-            font-size: 0.9em; 
-            outline: none;
-            transition: width 0.3s ease, background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            text-align: right;
-        }
-        #search-input::placeholder {
-            color: var(--gray);
-        }
-        #search-input:focus {
-            width: 350px; 
-            border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
-        }
-
-        .header-content:focus-within .logo {
-             font-size: 1.0em; 
-             padding-left: 15px; 
-        }
-        
-        .search-suggestions {
-            position: absolute;
-            top: 45px; 
-            left: 0; 
-            right: auto; 
-            width: 350px; 
-            background-color: var(--secondary);
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-            z-index: 1001;
-            overflow: hidden;
-            max-height: 0; 
-            transition: max-height 0.3s ease-out;
-        }
-        .search-suggestions.active {
-            max-height: 400px; 
-            border: 1px solid #333;
-            border-top: none;
-        }
-        .suggestion-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #333;
-            transition: background-color 0.2s;
-            color: var(--text);
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .suggestion-item:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        .suggestion-item img {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            margin-left: 10px; 
-            object-fit: cover;
-        }
-        .suggestion-item div {
-            flex-grow: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        /* --- End New Compact Search Styles --- */
-
-        /* Sliders */
-        .slider-container { width: 100%; overflow: hidden; position: relative; }
-        .slider { 
-            display: flex; gap: 15px; overflow-x: scroll; cursor: grab; padding: 5px 0; 
-            scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; 
-        }
-        .slider::-webkit-scrollbar { display: none; }
-        .banner-section { margin-top: 80px; padding-bottom: 30px; } 
-        /* (تحسين السرعة) - تم إزالة transition على :hover لتحسين الأداء */
-        .banner-item { min-width: 300px; height: 170px; border-radius: 10px; overflow: hidden; position: relative; transition: box-shadow 0.3s, transform 0.3s; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); scroll-snap-align: start; }
-        /* (تحسين السرعة) - إضافة خاصية loading="lazy" في كود HTML لصور الـ <img> */
-        .banner-item img { width: 100%; height: 100%; object-fit: cover; }
-        .banner-item:hover { transform: scale(1.03); z-index: 2; box-shadow: 0 15px 30px rgba(0,0,0,0.7); }
-        .category-section { padding: 30px 5%; margin-bottom: 20px; } 
-        .category-title { font-size: 1.5em; margin-bottom: 15px; border-right: 4px solid var(--accent); padding-right: 10px; }
-        .series-card { min-width: 160px; border-radius: 8px; overflow: hidden; cursor: pointer; transition: box-shadow 0.3s, transform 0.3s; position: relative; background: var(--secondary); box-shadow: 0 2px 5px rgba(0,0,0,0.3); scroll-snap-align: start; }
-        .series-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
-        .series-card img { width: 100%; height: 240px; object-fit: cover; }
-        .series-card .title { padding: 10px; font-size: 0.9em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* ========= Skeleton Effect (الواجهة الحديثة) ========= */
-        @keyframes shimmer {
-            0% { background-position: -800px 0; }
-            100% { background-position: 800px 0; }
-        }
-        .skeleton-base {
-            background-color: var(--skeleton-base); 
-            background: linear-gradient(to right, var(--skeleton-base) 8%, var(--skeleton-highlight) 18%, var(--skeleton-base) 33%);
-            background-size: 800px 104px; 
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        .skeleton-banner {
-            min-width: 300px; 
-            height: 170px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-        }
-
-        .skeleton-card {
-            min-width: 160px; 
-            height: 280px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex; /* لتمكين الشيمر الداخلي */
-            flex-direction: column;
-        }
-        /* جزء العنوان في بطاقة السكيلتون */
-        .skeleton-card .title-placeholder {
-            height: 15px;
-            width: 70%;
-            margin: 10px auto;
-            border-radius: 4px;
-            background-color: var(--skeleton-base);
-        }
-        /* ========= نهاية تأثير التحميل ========= */
-
-
-        /* Fullscreen Views */
-        .fullscreen-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--primary); transform: translateY(100%); transition: transform 0.3s ease; overflow-y: auto; }
-        .fullscreen-view.active { transform: translateY(0); }
-        .view-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.3; background-size: cover; background-position: center; filter: blur(20px); z-index: -1; }
-        .view-header { padding: 20px; display: flex; justify-content: flex-end; }
-        .close-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5em; cursor: pointer; }
-        .view-content { padding: 20px; max-width: 1200px; margin: 0 auto; }
-
-        /* Episode & Details Styling */
-        .info-grid { display: flex; gap: 30px; margin-bottom: 40px; flex-wrap: wrap; }
-        .poster-img { width: 220px; height: 330px; border-radius: 12px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .text-content { flex: 1; }
-        .action-btn { background: var(--accent); color: white; border: none; padding: 10px 25px; border-radius: 5px; font-size: 1em; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; margin-top: 5px; }
-        .action-btn svg { width: 20px; height: 20px; fill: white; }
-        
-        .episode-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #333;}
-        .episode-header h2 { margin: 0; font-size: 1.8em; max-width: 70%;}
-
-        .episodes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .episode-card { 
-            background: var(--secondary); /* تم تغيير لون الخلفية قليلاً لتحسين المظهر */
-            padding: 10px; 
-            border: 2px solid transparent; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .episode-card:hover { background: rgba(255,255,255,0.1); }
-        .episode-card.active { border-color: var(--accent); background: rgba(229, 9, 20, 0.2); }
-        .episode-thumb { width: 100%; height: 110px; object-fit: cover; border-radius: 5px; margin-bottom: 8px; }
-
-        /* حاوية الفيديو (مشغل مخصص مع طبقة الإعلان) */
-        .video-container { 
-            width: 100%; 
-            aspect-ratio: 16/9; 
-            background: black; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            margin-bottom: 0px; 
-            box-shadow: 0 15px 30px rgba(0,0,0,0.7); 
-            position: relative; 
-            /* لكي تكون الحاوية نفسها هي التي يتم توسيعها */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* عندما تكون الحاوية بوضع ملء الشاشة (الشكل المعروض) */
-        .video-container:fullscreen {
-            width: 100vw;
-            height: 100vh;
-            max-width: unset;
-            max-height: unset;
-            aspect-ratio: unset;
-            border-radius: 0;
-            margin: 0;
-            box-shadow: none;
-        }
-        
-        /* الطبقة الشفافة فوق المشغل لفتح الإعلان */
-        .ad-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10; 
-            cursor: pointer;
-            background: rgba(0,0,0,0.01); 
-        }
-
-        #player-placeholder {
-            width: 100%;
-            height: 100%;
-            pointer-events: none; 
-            flex-grow: 1; /* لجعل المشغل يملأ المساحة في وضع ملء الشاشة */
-        }
-        
-        /* شريط التحكم المخصص */
-        .player-controls {
-            background-color: var(--secondary);
-            padding: 10px 15px;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-            transition: opacity 0.3s ease, background-color 0.3s ease; /* للشفافية */
-            position: relative; /* لجعلها قابلة للتحكم في وضع ملء الشاشة */
-        }
-        
-        /* الهدف 2 و 3: الشفافية والإخفاء التلقائي عند ملء الشاشة */
-        .video-container:fullscreen + .player-controls {
-            /* وضع الشفافية */
-            background-color: rgba(31, 31, 31, 0.7); 
-            position: fixed; /* لتكون فوق الفيديو في وضع ملء الشاشة */
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            margin: 0;
-            border-radius: 0;
-            z-index: 2001; /* فوق كل شيء */
-            
-            /* حالة الإخفاء الأولية */
-            opacity: 0; 
-            pointer-events: none; /* تعطيل التفاعل عندما تكون مخفية */
-        }
-        
-        /* لإظهار التحكم عند التفاعل */
-        .player-controls.show-controls {
-            opacity: 1 !important; 
-            pointer-events: auto !important; 
-        }
-
-        .control-button {
-            background: none;
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            padding: 5px;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-        }
-
-        /* لزيادة شفافية أزرار التحكم في وضع ملء الشاشة */
-        .video-container:fullscreen + .player-controls .control-button {
-             background: rgba(255, 255, 255, 0.1); 
-             border-radius: 4px;
-        }
-
-        .control-button:hover {
-            color: var(--accent);
-        }
-
-        .control-button svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-        
-        .progress-bar-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        #progress-bar {
-            flex-grow: 1;
-            height: 5px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--gray);
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        /* تنسيق مقبض شريط التقدم */
-        #progress-bar::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-        }
-        #progress-bar::-moz-range-thumb {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            border: none;
-        }
-
-        .time-display {
-            font-size: 0.8em;
-            white-space: nowrap;
-        }
-        
-        /* التحكم بالصوت والسرعة */
-        .volume-controls, .speed-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .volume-controls input[type="range"] {
-            width: 80px;
-            height: 3px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--gray);
-            border-radius: 5px;
-        }
-        .speed-controls select {
-            background: var(--primary);
-            color: var(--text);
-            border: 1px solid #444;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-
-        /* Footer */
-        footer { background-color: #050505; padding: 50px 5%; margin-top: 50px; border-top: 1px solid #333; }
-        .copyright { text-align: center; color: #555; margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; font-size: 0.9em; }
-
-        @media (max-width: 768px) {
-            /* (تعديل) لتحسين مظهر شريط التحكم على الجوال */
-            .player-controls {
-                flex-wrap: wrap;
-                justify-content: center;
-                padding: 10px;
-                gap: 10px;
-            }
-            .progress-bar-container {
-                order: -1; 
-                width: 100%;
-                margin-bottom: 5px;
-            }
-            .volume-controls, .speed-controls {
-                margin: 0 5px;
-            }
-        }
+        body { font-family: Tahoma, sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .input-group { margin-bottom: 15px; }
+        input[type="text"] { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .question-block { background: #eef; padding: 15px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccd; }
+        .option-row { display: flex; align-items: center; gap: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; font-size: 16px; }
+        .btn-add { background: #28a745; color: white; }
+        .btn-save { background: #007bff; color: white; width: 100%; margin-top: 20px; }
+        #examLinkArea { margin-top: 20px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; display: none; text-align: center; }
+        a { font-weight: bold; color: #155724; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <header>
-        <div class="header-content">
-            <div class="logo">Saif TV</div>
-            <div class="search-container">
-                <input type="text" id="search-input" placeholder="ابحث..." />
-                <div class="search-suggestions" id="suggestions-box"></div>
+<div class="container">
+    <h2>إنشاء امتحان جديد</h2>
+    <div class="input-group">
+        <label>عنوان الامتحان:</label>
+        <input type="text" id="examTitle" placeholder="مثال: اختبار التاريخ الشهري">
+    </div>
+
+    <div id="questionsContainer">
+        <!-- هنا ستضاف الأسئلة -->
+    </div>
+
+    <button class="btn-add" onclick="addQuestion()">+ أضف سؤال</button>
+    <button class="btn-save" onclick="saveExam()">حفظ الامتحان وإنشاء الرابط</button>
+
+    <div id="examLinkArea">
+        <p>تم إنشاء الامتحان بنجاح! انسخ الرابط وشاركه مع الطلاب:</p>
+        <a href="#" id="generatedLink" target="_blank">رابط الامتحان</a>
+    </div>
+</div>
+
+<script type="module">
+  // استيراد دوال فايربيس
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCsnZdFrg-KlWFc0z6OgmXgBp6lPKf14fU",
+    authDomain: "saifsa-b51f1.firebaseapp.com",
+    databaseURL: "https://saifsa-b51f1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "saifsa-b51f1",
+    storageBucket: "saifsa-b51f1.firebasestorage.app",
+    messagingSenderId: "41089917871",
+    appId: "1:41089917871:web:fce49f6f23bd4f679b055a",
+    measurementId: "G-4K733KS3CP"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // جعل الدوال متاحة في النطاق العام لاستخدامها في HTML
+  window.addQuestion = function() {
+      const container = document.getElementById('questionsContainer');
+      const qIndex = container.children.length;
+      
+      const html = `
+        <div class="question-block" id="q_${qIndex}">
+            <input type="text" class="q-text" placeholder="نص السؤال رقم ${qIndex + 1}">
+            <div class="options">
+                <p style="font-size:12px; color:red">* اختر الدائرة بجوار الإجابة الصحيحة</p>
+                ${[0, 1, 2, 3].map(i => `
+                    <div class="option-row">
+                        <input type="radio" name="correct_${qIndex}" value="${i}">
+                        <input type="text" class="opt-text" placeholder="الاختيار ${i + 1}">
+                    </div>
+                `).join('')}
             </div>
         </div>
-    </header>
+      `;
+      container.insertAdjacentHTML('beforeend', html);
+  }
 
-    <div class="banner-section slider-container" id="banner-container">
-        <div class="slider" id="banner-content">
-            <!-- سيتم ملء هذا الجزء بهياكل التحميل (Skeletons) بواسطة JavaScript -->
-        </div>
-    </div>
+  window.saveExam = function() {
+      const title = document.getElementById('examTitle').value;
+      if(!title) { alert("يرجى كتابة عنوان الامتحان"); return; }
 
-    <main id="main-content">
-        <!-- الأقسام وهياكل التحميل ستظهر هنا -->
-    </main>
+      const qBlocks = document.querySelectorAll('.question-block');
+      if(qBlocks.length === 0) { alert("أضف سؤالاً واحداً على الأقل"); return; }
 
-    <!-- Footer الاحترافي -->
-    <footer>
-        <div class="copyright">© 2025 Saif TV - جميع الحقوق محفوظة</div>
-    </footer>
-
-    <!-- صفحة تفاصيل المسلسل (لم تتغير) -->
-    <div class="fullscreen-view" id="details-view">
-        <div class="view-bg" id="details-bg"></div>
-        <div class="view-header">
-            <button class="close-btn" onclick="closeView('details-view')">✕</button>
-        </div>
-        <div class="view-content" id="details-content"></div>
-    </div>
-
-    <!-- صفحة الحلقة (الواجهة الجديدة) -->
-    <div class="fullscreen-view" id="episode-view">
-        <div class="view-header">
-            <button class="close-btn" onclick="closeView('episode-view')">✕</button>
-        </div>
-        <div class="view-content" id="episode-content"></div>
-    </div>
-
-    <!-- تحميل YouTube Iframe Player API بشكل غير متزامن -->
-    <script>
-      var tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      var firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    </script>
-
-
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-
-      // هنا يتم وضع إعدادات Firebase الخاصة بك
-      const firebaseConfig = { apiKey: "AIzaSyCsnZdFrg-KlWFc0z6OgmXgBp6lPKf14fU", authDomain: "saifsa-b51f1.firebaseapp.com", databaseURL: "https://saifsa-b51f1-default-rtdb.europe-west1.firebasedatabase.app", projectId: "saifsa-b51f1", storageBucket: "saifsa-b51f1.firebasestorage.app", messagingSenderId: "41089917871", appId: "1:41089917871:web:fce49f6f23bd4f679b055a" };
-      // **********************************************************************************
-      const YOUTUBE_API_KEY = 'AIzaSyA4gfRf5sGQZ-a7ficcTcgU47aJV30cSgc'; 
-      const AD_LINK = 'https://www.effectivegatecpm.com/k8fisnjjc?key=afa7ea920578f74cea5997d670bbe78e';
+      let questionsData = [];
       
-      const AD_COOLDOWN_MS = 20000; // 20 ثانية
-      let lastAdClickTime = 0; 
-      
-      let player; // متغير المشغل الرئيسي
-      let updateProgressBarInterval; // لتحديث شريط التقدم
-      
-      // ********** دوال الإخفاء التلقائي للتحكم (الهدف 3) **********
-      let controlHideTimer;
-      const CONTROL_TIMEOUT = 2000; // 2000 ms = 2 ثانية
+      for (let block of qBlocks) {
+          const qText = block.querySelector('.q-text').value;
+          const optInputs = block.querySelectorAll('.opt-text');
+          const correctRadio = block.querySelector('input[type="radio"]:checked');
 
-      function showControls() {
-          const controls = document.querySelector('.player-controls');
-          if (!controls) return;
-          
-          controls.classList.add('show-controls');
-          clearTimeout(controlHideTimer);
-          
-          // إخفاء تلقائي فقط إذا كنا في وضع ملء الشاشة
-          if (document.fullscreenElement) { 
-              controlHideTimer = setTimeout(hideControls, CONTROL_TIMEOUT);
+          if(!qText || !correctRadio) {
+              alert("تأكد من كتابة نص جميع الأسئلة واختيار الإجابة الصحيحة لكل سؤال");
+              return;
           }
-      }
 
-      function hideControls() {
-          const controls = document.querySelector('.player-controls');
-          // إخفاء فقط إذا كنا في وضع ملء الشاشة
-          if (controls && document.fullscreenElement) { 
-              controls.classList.remove('show-controls');
-          }
-      }
-      
-      function handleFullscreenChange() {
-          const controls = document.querySelector('.player-controls');
-          if (document.fullscreenElement) {
-              // دخل في وضع ملء الشاشة
-              showControls(); 
-              // إزالة شريط التحكم الخاص باليوتيوب إذا كان موجوداً (قد يكون موجوداً في بعض الأجهزة)
-              const youtubeControls = document.querySelector('.video-container iframe');
-              if(youtubeControls) {
-                  youtubeControls.style.pointerEvents = 'none';
-              }
-          } else {
-              // خرج من وضع ملء الشاشة
-              clearTimeout(controlHideTimer);
-              if (controls) {
-                  controls.classList.remove('show-controls'); 
-              }
-          }
-      }
+          let options = [];
+          optInputs.forEach(inp => options.push(inp.value));
 
-      function setupControlHiding() {
-          const videoContainer = document.querySelector('.video-container');
-          if (!videoContainer) return;
-          
-          // الاستماع للتفاعلات داخل حاوية الفيديو
-          videoContainer.addEventListener('mousemove', showControls);
-          videoContainer.addEventListener('touchmove', showControls);
-          videoContainer.addEventListener('touchend', showControls);
-          videoContainer.addEventListener('click', showControls); 
-          
-          // الاستماع لتغييرات وضع ملء الشاشة
-          document.addEventListener('fullscreenchange', handleFullscreenChange);
-          document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-          document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-          document.addEventListener('msfullscreenchange', handleFullscreenChange);
-          
-          // عرض الأزرار لثواني عند بدء التشغيل
-          showControls(); 
-      }
-      
-      // ********** نهاية دوال الإخفاء التلقائي **********
-
-      // ********** دالة ملء الشاشة (الهدف 1) **********
-      window.toggleFullscreen = function() {
-          const videoContainer = document.querySelector('.video-container');
-          if (!videoContainer) return;
-          
-          if (document.fullscreenElement) {
-              document.exitFullscreen();
-          } else {
-              if (videoContainer.requestFullscreen) {
-                  videoContainer.requestFullscreen();
-              } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
-                  videoContainer.webkitRequestFullscreen();
-              } else if (videoContainer.msRequestFullscreen) { /* IE11 */
-                  videoContainer.msRequestFullscreen();
-              }
-          }
-      }
-      // ********** نهاية دالة ملء الشاشة **********
-      
-      // **********************************************************************************
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      
-      // =========================================================
-      // الدوال الخاصة بمشغل الفيديو (محدثة)
-      // =========================================================
-
-      // تعريف دالة YouTube Player API Ready (ضرورية لأنها تعمل في نطاق (Scope) النافذة)
-      window.onYouTubeIframeAPIReady = function() {
-          console.log("YouTube Iframe API is ready.");
-          // يتم تشغيل playerInstance (انظر playEpisode) عندما يتم النقر على الحلقة
-      }
-      
-      function formatTime(seconds) {
-          const hours = Math.floor(seconds / 3600);
-          const minutes = Math.floor((seconds % 3600) / 60);
-          const remainingSeconds = Math.floor(seconds % 60);
-          
-          let time = '';
-          if (hours > 0) {
-              time += hours + ':';
-          }
-          time += (minutes < 10 && hours > 0 ? '0' : '') + minutes + ':';
-          time += (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
-          return time;
-      }
-      
-      window.togglePlayPause = function() {
-          if (!player) return;
-          if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-              player.pauseVideo();
-          } else {
-              player.playVideo();
-          }
-          updatePlayPauseButton();
-          showControls(); // عند الضغط على زر التحكم, أعد تشغيل المؤقت
-      }
-
-      function updatePlayPauseButton() {
-          const btn = document.getElementById('play-pause-btn');
-          if (!btn) return;
-          
-          if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
-              // أيقونة إيقاف
-              btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-          } else {
-              // أيقونة تشغيل
-              btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-          }
-      }
-      
-      window.seekVideo = function(seconds) {
-          if (!player) return;
-          const currentTime = player.getCurrentTime();
-          player.seekTo(currentTime + seconds, true);
-          showControls(); // عند الضغط على زر التحكم, أعد تشغيل المؤقت
-      }
-      
-      function updateProgressBar() {
-          if (!player || player.getDuration() === 0) return;
-
-          const currentTime = player.getCurrentTime();
-          const duration = player.getDuration();
-          const progressBar = document.getElementById('progress-bar');
-          const timeDisplay = document.getElementById('time-display');
-
-          if (progressBar) {
-              progressBar.value = (currentTime / duration) * 100;
-          }
-          if (timeDisplay) {
-              timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-          }
-          updatePlayPauseButton(); // للتأكد من تحديث حالة الزر باستمرار
-      }
-      
-      window.onProgressBarChange = function(e) {
-          if (!player) return;
-          const duration = player.getDuration();
-          const newTime = (e.target.value / 100) * duration;
-          player.seekTo(newTime, true);
-          showControls(); // عند التفاعل مع الشريط, أعد تشغيل المؤقت
-      }
-
-      window.onVolumeChange = function(e) {
-          if (!player) return;
-          player.setVolume(e.target.value);
-          showControls();
-      }
-      
-      window.onSpeedChange = function(e) {
-          if (!player) return;
-          player.setPlaybackRate(parseFloat(e.target.value));
-          showControls();
-      }
-      
-      // =========================================================
-      // الدوال المساعدة القديمة (تم تحديث بعضها)
-      // =========================================================
-
-      window.openAdLink = function() {
-          const now = Date.now();
-          
-          if (now - lastAdClickTime < AD_COOLDOWN_MS) {
-              console.log("Ad link cooldown active.");
-              return; 
-          }
-          
-          const newWindow = window.open(AD_LINK, '_blank');
-          
-          if (newWindow) {
-             setTimeout(() => {
-                  if (window.focus) {
-                      window.focus();
-                  }
-             }, 100); 
-          }
-          
-          lastAdClickTime = now; 
-      }
-
-      // دالة مساعدة لجلب البيانات من YouTube
-      async function fetchYT(params) {
-          try {
-              const res = await fetch(`https://www.googleapis.com/youtube/v3/${params}&key=${YOUTUBE_API_KEY}`);
-              return await res.json();
-          } catch(e) { console.error("Error fetching YT data:", e); return null; }
-      }
-
-      const allSeriesData = []; 
-      const seriesIdSet = new Set(); 
-      const NUM_SKELETONS = 6;
-      const SKELETON_HTML = Array(NUM_SKELETONS).fill('<div class="skeleton-card skeleton-base"><div class="title-placeholder"></div></div>').join('');
-      const SKELETON_BANNER_HTML = Array(4).fill('<div class="skeleton-banner skeleton-base"></div>').join('');
-
-
-      onValue(ref(database, 'series/'), (snapshot) => {
-          const data = snapshot.val() || {};
-          const allPlaylists = [];
-          Object.keys(data).forEach(cat => {
-              Object.values(data[cat]).forEach(item => {
-                  if (!seriesIdSet.has(item.playlistId)) {
-                      allPlaylists.push(item.playlistId);
-                      seriesIdSet.add(item.playlistId);
-                  }
-              });
+          questionsData.push({
+              text: qText,
+              options: options,
+              correctIndex: parseInt(correctRadio.value)
           });
-          const uniqueIds = [...new Set(allPlaylists)];
-          
-          // (تحسين UX) عرض هياكل التحميل للبانر أولاً
-          const bannerContainer = document.getElementById('banner-content');
-          bannerContainer.innerHTML = SKELETON_BANNER_HTML;
-          makeDraggable(bannerContainer);
-          buildBanner(uniqueIds);
+      }
 
-          const mainContent = document.getElementById('main-content');
-          mainContent.innerHTML = '';
+      // حفظ في فايربيس
+      const examsRef = ref(db, 'exams');
+      const newExamRef = push(examsRef);
+      
+      set(newExamRef, {
+          title: title,
+          questions: questionsData,
+          createdAt: Date.now()
+      }).then(() => {
+          const examId = newExamRef.key;
+          // افترضنا أن ملف الطالب اسمه exam.html وموجود بجانب هذا الملف
+          const link = `${window.location.href.replace('admin.html', 'exam.html')}?id=${examId}`;
           
-          Object.keys(data).forEach(async cat => {
-              const section = document.createElement('div');
-              section.className = 'category-section';
-              // (تحسين UX) عرض هياكل التحميل للأقسام
-              section.innerHTML = `<h2 class="category-title">${cat}</h2><div class="slider-container"><div class="slider" id="cat-${cat}">${SKELETON_HTML}</div></div>`;
-              mainContent.appendChild(section);
-              
-              const catIds = Object.values(data[cat]).map(i => i.playlistId);
-              const sliderElement = document.getElementById(`cat-${cat}`);
-              await buildSlider(sliderElement, catIds);
-              makeDraggable(sliderElement); 
-          });
+          document.getElementById('generatedLink').href = link;
+          document.getElementById('generatedLink').innerText = link;
+          document.getElementById('examLinkArea').style.display = 'block';
+          alert("تم الحفظ بنجاح!");
+      }).catch((error) => {
+          alert("حدث خطأ: " + error.message);
       });
+  }
 
-      async function buildBanner(ids) {
-          const container = document.getElementById('banner-content');
-          container.innerHTML = ''; // إزالة هياكل التحميل
-          const recentIds = ids.slice(-10); 
-          
-          for (const id of recentIds) {
-              const info = await fetchYT(`playlists?part=snippet&id=${id}`);
-              if(info && info.items.length > 0) {
-                  const title = info.items[0].snippet.title; 
-                  const img = info.items[0].snippet.thumbnails.maxres?.url || info.items[0].snippet.thumbnails.high.url;
-                  
-                  if (!allSeriesData.find(s => s.id === id)) {
-                      allSeriesData.push({ id, title, img });
-                  }
+  // إضافة سؤال واحد افتراضي عند التحميل
+  window.onload = addQuestion;
+</script>
 
-                  const div = document.createElement('div');
-                  div.className = 'banner-item';
-                  div.onclick = () => window.openSeries(id); 
-                  div.innerHTML = `<img src="${img}" loading="lazy">`; 
-                  container.appendChild(div);
-              }
-          }
-      }
-
-      async function buildSlider(container, ids) {
-          container.innerHTML = ''; // إزالة هياكل التحميل
-          for (const id of ids) {
-              const info = await fetchYT(`playlists?part=snippet&id=${id}`);
-              if(info && info.items.length > 0) {
-                  const title = info.items[0].snippet.title;
-                  const img = info.items[0].snippet.thumbnails.high.url;
-                  
-                  if (!allSeriesData.find(s => s.id === id)) {
-                      allSeriesData.push({ id, title, img });
-                  }
-                  
-                  const div = document.createElement('div');
-                  div.className = 'series-card';
-                  div.onclick = () => window.openSeries(id); 
-                  div.innerHTML = `<img src="${img}" loading="lazy"><div class="title">${title}</div>`; 
-                  container.appendChild(div);
-              }
-          }
-      }
-      
-      // ... (دوال البحث لم تتغير) ...
-      
-      window.openSeries = async (id) => {
-          // (تعديل) لا يتم فتح إعلان هنا. يتم فتح الإعلان عند النقر على الحلقة نفسها.
-          const view = document.getElementById('details-view');
-          const content = document.getElementById('details-content');
-          content.innerHTML = '<h2 style="text-align:center">جاري التحميل...</h2>';
-          view.classList.add('active');
-          
-          const info = await fetchYT(`playlists?part=snippet&id=${id}`);
-          const items = await fetchYT(`playlistItems?part=snippet&playlistId=${id}&maxResults=50`);
-          
-          if(!info || !items || info.items.length === 0) {
-             content.innerHTML = '<h2 style="text-align:center">عذراً، لم يتم العثور على بيانات المسلسل.</h2>';
-             return;
-          }
-          
-          const s = info.items[0].snippet;
-          const bg = s.thumbnails.maxres?.url || s.thumbnails.high.url;
-          document.getElementById('details-bg').style.backgroundImage = `url(${bg})`;
-          
-          // (معدل) استدعاء openAdLink عند النقر على بطاقة الحلقة
-          const episodesHtml = items.items.map(e => `
-              <div class="episode-card" onclick="window.openAdLink(); window.playEpisode('${id}', '${e.snippet.resourceId.videoId}', '${e.snippet.title}')">
-                  <img class="episode-thumb" src="${e.snippet.thumbnails.medium.url}">
-                  <div title="${e.snippet.title}">${e.snippet.title}</div>
-              </div>
-          `).join('');
-
-          content.innerHTML = `
-              <div class="info-grid">
-                  <img class="poster-img" src="${s.thumbnails.high.url}">
-                  <div class="text-content">
-                      <h1>${s.title}</h1>
-                      <p>${s.description.substring(0, 200)}${s.description.length > 200 ? '...' : ''}</p>
-                      <button class="action-btn" onclick="window.shareLink('${id}')">
-                          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                          مشاركة المسلسل
-                      </button>
-                  </div>
-              </div>
-              <h3>الحلقات (${items.items.length})</h3>
-              <div class="episodes-grid">${episodesHtml}</div>
-          `;
-      }
-
-
-      window.playEpisode = async (playlistId, videoId, title) => {
-          if (updateProgressBarInterval) clearInterval(updateProgressBarInterval); // إيقاف أي مؤقت سابق
-
-          const view = document.getElementById('episode-view');
-          const content = document.getElementById('episode-content');
-          document.getElementById('details-view').classList.remove('active');
-          view.classList.add('active');
-          
-          // ********** تحديث هيكل مشغل الفيديو **********
-          content.innerHTML = `
-              <div class="video-container">
-                  <div id="player-placeholder"></div> <!-- المشغل الجديد سيتم وضعه هنا -->
-                  <div class="ad-overlay" id="ad-overlay"></div> 
-              </div>
-              
-              <!-- شريط التحكم المخصص -->
-              <div class="player-controls">
-                  <!-- زر التشغيل/الإيقاف -->
-                  <button class="control-button" id="play-pause-btn" onclick="window.togglePlayPause()">
-                      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  </button>
-                  
-                  <!-- التقديم والتأخير السريع -->
-                  <button class="control-button" onclick="window.seekVideo(-10)">
-                      <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-                  </button>
-                  <button class="control-button" onclick="window.seekVideo(10)">
-                      <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" transform="scale(-1, 1) translate(-24, 0)"/></svg>
-                  </button>
-
-                  <!-- شريط التقدم وعرض الوقت -->
-                  <div class="progress-bar-container">
-                      <span class="time-display" id="time-display">0:00 / 0:00</span>
-                      <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1" onchange="window.onProgressBarChange(event)">
-                  </div>
-
-                  <!-- التحكم بالصوت -->
-                  <div class="volume-controls">
-                      <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.81 5 3.54 5 6.71s-2.11 5.9-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                      <input type="range" id="volume-control" value="100" min="0" max="100" oninput="window.onVolumeChange(event)">
-                  </div>
-                  
-                  <!-- التحكم بالسرعة -->
-                  <div class="speed-controls">
-                      <select id="speed-control" onchange="window.onSpeedChange(event)">
-                          <option value="0.25">0.25x</option>
-                          <option value="0.5">0.5x</option>
-                          <option value="0.75">0.75x</option>
-                          <option value="1" selected>عادي</option>
-                          <option value="1.25">1.25x</option>
-                          <option value="1.5">1.5x</option>
-                          <option value="1.75">1.75x</option>
-                          <option value="2">2x</option>
-                      </select>
-                  </div>
-                  
-                  <!-- ********** زر تكبير الشاشة الجديد ********** -->
-                  <button class="control-button" id="fullscreen-btn" onclick="window.toggleFullscreen()">
-                      <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-                  </button>
-                  <!-- ********** نهاية زر تكبير الشاشة ********** -->
-              </div>
-
-              <div class="episode-header">
-                  <h2>${title}</h2> 
-                  <button class="action-btn" onclick="window.shareLink('${playlistId}', '${videoId}')">
-                    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                    مشاركة الحلقة الحالية
-                  </button>
-              </div>
-
-              <h3>باقي الحلقات</h3>
-              <div class="episodes-grid" id="related-eps">
-                 <p style="color:var(--gray);">جاري تحميل الحلقات...</p>
-              </div>
-          `;
-          
-          // ********** تهيئة المشغل (Player) **********
-          if (typeof YT !== 'undefined' && YT.Player) {
-              player = new YT.Player('player-placeholder', {
-                  videoId: videoId,
-                  playerVars: {
-                      'autoplay': 1,
-                      'controls': 0, // إخفاء عناصر تحكم YouTube الأصلية
-                      'modestbranding': 1,
-                      'rel': 0,
-                      'fs': 1 
-                  },
-                  events: {
-                      'onReady': (e) => {
-                          e.target.playVideo();
-                          // بدء تحديث شريط التقدم كل 250 ميلي ثانية
-                          updateProgressBarInterval = setInterval(updateProgressBar, 250); 
-                      },
-                      'onStateChange': (e) => {
-                          updatePlayPauseButton();
-                      }
-                  }
-              });
-          } else {
-               document.getElementById('player-placeholder').innerHTML = '<p style="color:var(--accent);text-align:center;">جاري تحميل مكتبة المشغل...</p>';
-          }
-
-          // إضافة معالجات النقر إلى الطبقة الشفافة وأزرار التحكم الجديدة
-          document.getElementById('ad-overlay').addEventListener('click', window.openAdLink);
-          
-          // ********** تفعيل ميزة الإخفاء التلقائي **********
-          setupControlHiding();
-          
-          // تحميل الحلقات المقترحة في الاسفل
-          const items = await fetchYT(`playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50`);
-          
-          if(items && items.items) {
-              const html = items.items.map(e => {
-                 const current = e.snippet.resourceId.videoId === videoId ? ' active' : '';
-                 const epTitle = e.snippet.title;
-                 // (معدل) إضافة استدعاء openAdLink عند النقر على حلقة مقترحة
-                 return `
-                     <div class="episode-card${current}" 
-                          onclick="window.openAdLink(); window.playEpisode('${playlistId}', '${e.snippet.resourceId.videoId}', '${epTitle}')">
-                          <img class="episode-thumb" src="${e.snippet.thumbnails.medium.url}" loading="lazy">
-                          <div title="${epTitle}">${epTitle}</div>
-                      </div>
-                  `;
-              }).join('');
-              document.getElementById('related-eps').innerHTML = html;
-              
-              window.history.pushState("", document.title, `#series=${playlistId}&vid=${videoId}`);
-          } else {
-               document.getElementById('related-eps').innerHTML = '<p style="color:var(--gray);">تعذر تحميل قائمة الحلقات.<p>';
-          }
-      }
-
-      window.closeView = (id) => {
-          document.getElementById(id).classList.remove('active');
-          if(id === 'episode-view') {
-             if (updateProgressBarInterval) clearInterval(updateProgressBarInterval); // إيقاف المؤقت
-             if (player) {
-                 player.destroy(); // حذف المشغل من الذاكرة
-                 player = null;
-             }
-             
-             // ********** تنظيف معالجات الإخفاء التلقائي **********
-             clearTimeout(controlHideTimer);
-             const videoContainer = document.querySelector('.video-container');
-             if (videoContainer) {
-                 videoContainer.removeEventListener('mousemove', showControls);
-                 videoContainer.removeEventListener('touchmove', showControls);
-                 videoContainer.removeEventListener('touchend', showControls);
-                 videoContainer.removeEventListener('click', showControls);
-             }
-             document.removeEventListener('fullscreenchange', handleFullscreenChange);
-             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-             document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-             document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-             // ********** نهاية التنظيف **********
-          }
-          if(window.location.hash.includes('#series=')) {
-              window.history.pushState("", document.title, window.location.pathname + window.location.search);
-          }
-      };
-      
-      // ... (باقي الدوال لم تتغير) ...
-      
-      // فتح الروابط المباشرة (Deep Linking)
-      window.onload = () => {
-          const hash = window.location.hash;
-          if(hash.includes('series=')) {
-              const pid = hash.split('series=')[1].split('&')[0];
-              const vid = hash.includes('vid=') ? hash.split('vid=')[1].split('&')[0] : null;
-              if(vid) {
-                 window.openAdLink(); 
-                 fetchYT(`videos?part=snippet&id=${vid}`).then(data => {
-                      const title = data.items.length > 0 ? data.items[0].snippet.title : 'جاري تحميل العنوان...';
-                      window.playEpisode(pid, vid, title);
-                 });
-              }
-              else window.openSeries(pid);
-          }
-      }
-      
-      // كود تفعيل السحب اليدوي (Drag/Swipe)
-      window.makeDraggable = (slider) => {
-        let isDown = false;
-        let startX;
-        let scrollLeft;
-
-        const startDrag = (e) => {
-            isDown = true;
-            slider.style.cursor = 'grabbing';
-            const clientX = e.touches ? e.touches[0].pageX : e.pageX;
-            startX = clientX - slider.offsetLeft;
-            scrollLeft = slider.scrollLeft;
-        };
-
-        const endDrag = () => {
-            isDown = false;
-            slider.style.cursor = 'grab';
-        };
-
-        const moveDrag = (e) => {
-            if(!isDown) return;
-            e.preventDefault();
-            const clientX = e.touches ? e.touches[0].pageX : e.pageX;
-            const x = clientX - slider.offsetLeft;
-            const walk = (x - startX) * 2; 
-            slider.scrollLeft = scrollLeft - walk;
-        };
-
-        // أحداث الفأرة واللمس
-        slider.addEventListener('mousedown', startDrag);
-        slider.addEventListener('mouseleave', endDrag);
-        slider.addEventListener('mouseup', endDrag);
-        slider.addEventListener('mousemove', moveDrag);
-        slider.addEventListener('touchstart', startDrag, { passive: true });
-        slider.addEventListener('touchend', endDrag);
-        slider.addEventListener('touchmove', moveDrag, { passive: false });
-      };
-    </script>
 </body>
 </html>
