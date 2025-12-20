@@ -10,6 +10,9 @@
     <meta property="og:image" content="https://i.postimg.cc/g0KcyDsw/Elegant-White-Dove-With-Olive-Branch-White-Dove-Bird-Peace-PNG-Transparent-Image-and-Clipart-for.jpg">
     <meta property="og:type" content="website">
 
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#050505">
+
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;500;700;900&family=Outfit:wght@300;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -139,11 +142,30 @@
         .filter-menu.show { opacity: 1; pointer-events: all; }
         .filter-opt { padding: 12px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 700; text-align: center; }
         .filter-opt.selected { background: #000; color: white; }
+
+        .install-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); }
+        .install-popup-overlay.show { opacity: 1; pointer-events: all; }
+        .install-card { background: #111; border: 1px solid #333; padding: 30px; border-radius: 25px; text-align: center; width: 90%; max-width: 320px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        .install-logo { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 20px; object-fit: cover; border: 2px solid #333; }
+        .install-title { color: white; margin-bottom: 5px; font-size: 1.2rem; }
+        .install-desc { color: #888; font-size: 0.9rem; margin-bottom: 25px; }
+        .btn-install { background: var(--white); color: black; border: none; padding: 12px 40px; border-radius: 30px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-close-install { margin-top: 15px; background: transparent; color: #666; border: none; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="bg-effect"></div>
+
+    <div class="install-popup-overlay" id="install-popup">
+        <div class="install-card">
+            <img src="https://i.postimg.cc/g0KcyDsw/Elegant-White-Dove-With-Olive-Branch-White-Dove-Bird-Peace-PNG-Transparent-Image-and-Clipart-for.jpg" class="install-logo" alt="Logo">
+            <h3 class="install-title">تثبيت التطبيق</h3>
+            <p class="install-desc">قم بتثبيت منبر الأحرار لتجربة أفضل</p>
+            <button class="btn-install" onclick="triggerInstall()">تثبيت الآن</button>
+            <button class="btn-close-install" onclick="closeInstallPopup()">ليس الآن</button>
+        </div>
+    </div>
 
     <div class="app-view active" id="v-home">
         <div class="home-content">
@@ -253,6 +275,30 @@
         let isMuted = false;
         let calls = {};
         let roomRef = null;
+        let deferredPrompt;
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-popup').classList.add('show');
+        });
+
+        window.triggerInstall = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('install-popup').classList.remove('show');
+            }
+        };
+
+        window.closeInstallPopup = () => {
+            document.getElementById('install-popup').classList.remove('show');
+        };
 
         window.onload = () => {
             document.getElementById('id-text').innerHTML = `هويتك: <b>${user.code}</b>`;
