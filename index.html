@@ -10,7 +10,6 @@
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <style>
-        /* --- الأساسيات --- */
         :root {
             --bg-deep: #050505;
             --bg-card: #0e0e0e;
@@ -19,7 +18,7 @@
             --gold-glow: rgba(255, 183, 0, 0.3);
             --fabric-red: #c60000;
             --text-gray: #888888;
-            --disabled: #333333;
+            --safe-bottom: 60px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
@@ -30,34 +29,24 @@
             height: 100dvh;
             width: 100vw;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            display: flex; flex-direction: column; position: relative;
         }
 
-        /* --- خلفية الشهب --- */
         .sky-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 0;
-            overflow: hidden;
+            pointer-events: none; z-index: 0; overflow: hidden;
             background: radial-gradient(circle at bottom, #0f1215 0%, #000000 70%);
         }
         .star {
-            position: absolute; top: 50%; left: 50%; height: 2px;
+            position: absolute; height: 2px;
             background: linear-gradient(-45deg, rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
-            border-radius: 999px;
-            filter: drop-shadow(0 0 6px rgba(105, 155, 255, 1));
+            border-radius: 999px; filter: drop-shadow(0 0 6px rgba(105, 155, 255, 1));
             animation: tail 3000ms ease-in-out infinite, shooting 3000ms ease-in-out infinite;
         }
-        .star:nth-child(1) { top: 0; left: 80%; width: 100px; animation-delay: 0ms; }
-        .star:nth-child(2) { top: -20px; left: 50%; width: 120px; animation-delay: 4000ms; }
-        .star:nth-child(3) { top: 10%; left: 10%; width: 80px; animation-delay: 7500ms; }
-        .star:nth-child(4) { top: -10%; left: 30%; width: 150px; animation-delay: 11000ms; }
-        .star:nth-child(5) { top: 20%; left: 90%; width: 90px; animation-delay: 15000ms; }
+
         @keyframes tail { 0% { width: 0; } 30% { width: 100px; } 100% { width: 0; } }
         @keyframes shooting { 0% { transform: translateX(0) translateY(0) rotate(45deg); opacity: 1; } 100% { transform: translateX(-300px) translateY(300px) rotate(45deg); opacity: 0; } }
 
-        /* --- إدارة الواجهات (Switching Views) --- */
         .app-view {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; display: flex; flex-direction: column;
@@ -66,159 +55,128 @@
         }
         .app-view.active { opacity: 1; pointer-events: all; transform: scale(1); }
 
-        /* --- الواجهة الرئيسية (Home) --- */
         .home-content { margin: auto; width: 100%; text-align: center; padding: 20px; }
-        
-        .freedom-icon {
-            font-size: 4.5rem; color: var(--gold); margin-bottom: 20px;
-            filter: drop-shadow(0 0 20px var(--gold-glow));
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .freedom-icon { font-size: 4.5rem; color: var(--gold); margin-bottom: 20px; filter: drop-shadow(0 0 20px var(--gold-glow)); }
 
         h1 { font-weight: 700; font-size: 2rem; margin-bottom: 5px; background: linear-gradient(to bottom, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .sub-text { color: var(--text-gray); font-size: 0.9rem; margin-bottom: 40px; }
 
-        /* الأزرار الرئيسية */
         .main-btn {
             width: 100%; max-width: 320px; padding: 20px; margin: 15px auto;
             border-radius: 16px; border: 1px solid #222;
             display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: 0.3s;
-            background: rgba(255,255,255,0.03);
-            text-align: right;
+            cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.03);
         }
-        .main-btn .icon-box {
-            width: 40px; height: 40px; border-radius: 10px; background: #222;
-            display: flex; align-items: center; justify-content: center; color: white;
-            font-size: 1.1rem;
-        }
-        .main-btn .text-box { flex: 1; margin-right: 15px; }
-        .main-btn h3 { font-size: 1rem; color: white; margin-bottom: 3px; }
-        .main-btn p { font-size: 0.8rem; color: #666; }
+        .main-btn .text-box { flex: 1; margin-right: 15px; text-align: right; }
 
-        .main-btn:hover { background: rgba(255,255,255,0.08); border-color: #444; }
-        .main-btn:active { transform: scale(0.98); }
-
-        /* الزر المعطل (المغلق) */
-        .main-btn.disabled {
-            opacity: 0.5; pointer-events: none; filter: grayscale(1);
-            border-style: dashed;
-        }
-
-        /* --- واجهة الغرفة (Room) --- */
         .room-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .live-badge { font-size: 0.9rem; font-weight: 700; color: #fff; }
-        .copy-btn { background:transparent; border:1px solid #333; color:white; padding:8px 15px; border-radius:20px; cursor:pointer; font-size: 0.8rem; }
+        .copy-btn { background:transparent; border:1px solid #333; color:white; padding:8px 15px; border-radius:20px; cursor:pointer; }
 
-        .grid-container {
-            display: grid; gap: 15px; padding: 20px; overflow-y: auto; padding-bottom: 120px;
-            flex: 1; align-content: center; justify-content: center;
-        }
-        .grid-container.layout-1 { grid-template-columns: 1fr; max-width: 280px; margin: 0 auto; width: 100%; }
-        .grid-container.layout-2 { grid-template-columns: 1fr 1fr; max-width: 500px; margin: 0 auto; width: 100%; }
-        .grid-container.layout-more { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); width: 100%; }
+        .grid-container { display: grid; gap: 15px; padding: 20px; overflow-y: auto; flex: 1; align-content: center; justify-content: center; margin-bottom: 120px; }
+        .layout-1 { grid-template-columns: 1fr; max-width: 280px; margin: 0 auto; width: 100%; }
+        .layout-2 { grid-template-columns: 1fr 1fr; max-width: 500px; margin: 0 auto; width: 100%; }
+        .layout-more { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); width: 100%; }
 
-        /* كارت المستخدم */
-        .user-card {
-            aspect-ratio: 1; background: var(--bg-card); border-radius: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; border: 1px solid #222;
+        .user-card { aspect-ratio: 1; background: var(--bg-card); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid #222; overflow: hidden; }
+        .card-avatar { width: 60px; height: 60px; border-radius: 50%; background: #000; border: 2px solid #333; color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; z-index: 2; position: relative; }
+        
+        .voice-wave-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 20px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
-        .card-avatar {
-            width: 60px; height: 60px; border-radius: 50%; background: #000; border: 2px solid #333;
-            color: var(--white); display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; font-weight: 700; margin-bottom: 15px;
+        .voice-wave-container.speaking { opacity: 1; }
+        
+        .wave-bar {
+            width: 4px;
+            background-color: var(--gold);
+            border-radius: 2px;
+            animation: waveAnim 1s ease-in-out infinite;
         }
-        .status-dot { width: 8px; height: 8px; background: #333; border-radius: 50%; position: absolute; top: 15px; right: 15px; }
-        .status-dot.speaking { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .wave-bar:nth-child(1) { height: 40%; animation-delay: 0.0s; }
+        .wave-bar:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { height: 60%; animation-delay: 0.3s; }
 
-        /* --- شريط التحكم (Dock) --- */
-        .dock {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            background: rgba(20,20,20,0.95); backdrop-filter: blur(10px);
-            padding: 10px 15px; border-radius: 60px; border: 1px solid #222;
-            display: flex; gap: 15px; z-index: 100; align-items: center;
-        }
-        .dock-btn {
-            width: 50px; height: 50px; border-radius: 50%; border: none;
-            background: var(--white); color: #000; font-size: 1.1rem;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: 0.2s; box-shadow: 0 5px 15px rgba(255,255,255,0.1);
-        }
-        .dock-btn.active { background: #ddd; }
-
-        /* زر الخروج (X) الأحمر */
-        .dock-btn.danger {
-            width: 60px; height: 60px; color: white;
-            background-color: var(--fabric-red);
-            background-image: radial-gradient(rgba(0,0,0,0.3) 15%, transparent 16%), radial-gradient(rgba(0,0,0,0.3) 15%, transparent 16%);
-            background-size: 4px 4px; background-position: 0 0, 2px 2px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 5px 20px rgba(198, 0, 0, 0.3);
-            border: 1px solid #8a0000;
+        @keyframes waveAnim {
+            0%, 100% { height: 30%; }
+            50% { height: 100%; }
         }
 
-        /* بوابة الدخول */
-        .audio-gate {
-            position: fixed; inset: 0; background: #000; z-index: 200;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: 0.4s;
-        }
+        .dock { position: absolute; bottom: var(--safe-bottom); left: 50%; transform: translateX(-50%); background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 60px; border: 1px solid #222; display: flex; gap: 15px; z-index: 100; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .dock-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--white); color: #000; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .dock-btn.danger { width: 60px; height: 60px; color: white; background-color: var(--fabric-red); border: 1px solid #8a0000; }
+
+        .audio-gate { position: fixed; inset: 0; background: #000; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s; }
         .audio-gate.show { opacity: 1; pointer-events: all; }
         
-        .filter-menu {
-            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
-            background: var(--white); color: black; border-radius: 15px; padding: 10px; width: 180px;
-            opacity: 0; pointer-events: none; transition: 0.3s; text-align: center;
-        }
-        .filter-menu.show { opacity: 1; pointer-events: all; bottom: 110px; }
-        .filter-opt { padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; }
-        .filter-opt.selected { background: #000; color: white; }
+        .share-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(4px); }
+        .share-overlay.show { opacity: 1; pointer-events: all; }
+        .share-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #151515; border-radius: 30px 30px 0 0; padding: 25px 20px; transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); z-index: 301; border-top: 1px solid #222; padding-bottom: calc(var(--safe-bottom) + 20px); }
+        .share-sheet.show { bottom: 0; }
+        .share-title { text-align: center; margin-bottom: 30px; font-weight: 700; font-size: 1.2rem; color: #fff; }
+        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; }
+        .share-icon { width: 55px; height: 55px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; }
+        .share-label { font-size: 0.8rem; color: #888; }
+        
+        .whatsapp { background: #25D366; }
+        .telegram { background: #0088cc; }
+        .facebook { background: #1877F2; }
+        .copy-link-item { background: #333; }
 
+        .toast-container { position: fixed; bottom: calc(var(--safe-bottom) + 85px); left: 50%; transform: translateX(-50%); z-index: 400; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+        .toast { background: rgba(255,255,255,0.95); color: black; padding: 12px 25px; border-radius: 30px; font-size: 0.9rem; font-weight: 700; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transform: translateY(20px); opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-top: 10px; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        .filter-menu { position: absolute; bottom: calc(var(--safe-bottom) + 85px); left: 50%; transform: translateX(-50%); background: #fff; color: black; border-radius: 20px; padding: 10px; width: 180px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 110; border: 1px solid #ccc; }
+        .filter-menu.show { opacity: 1; pointer-events: all; }
+        .filter-opt { padding: 12px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 700; text-align: center; }
+        .filter-opt.selected { background: #000; color: white; }
     </style>
 </head>
 <body>
 
     <div class="sky-container">
-        <div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div>
+        <div class="star" style="top: 10%; left: 80%; width: 100px; animation-delay: 0s;"></div>
+        <div class="star" style="top: 20%; left: 30%; width: 120px; animation-delay: 3s;"></div>
     </div>
 
-    <!-- الواجهة الرئيسية -->
     <div class="app-view active" id="v-home">
         <div class="home-content">
             <div class="freedom-icon"><i class="fas fa-dove"></i></div>
             <h1>منبر الأحرار</h1>
             <p class="sub-text" id="id-text">جاري التحميل...</p>
 
-            <!-- زر غرفتك السابقة -->
             <div class="main-btn" id="btn-rejoin" onclick="rejoinLastRoom()">
                 <div class="text-box">
                     <h3>غرفتك السابقة</h3>
-                    <p>العودة للمساحة الأخيرة</p>
+                    <p id="last-room-txt">العودة للمساحة الأخيرة</p>
                 </div>
-                <div class="icon-box"><i class="fas fa-history"></i></div>
+                <div style="width:40px; height:40px; background:#222; border-radius:10px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-history"></i></div>
             </div>
 
-            <!-- زر إنشاء جديد -->
             <div class="main-btn" onclick="createNewRoom()">
                 <div class="text-box">
                     <h3>مساحة جديدة</h3>
-                    <p>حذف القديم وبدء نقاش جديد</p>
+                    <p>بدء نقاش جديد كلياً</p>
                 </div>
-                <div class="icon-box"><i class="fas fa-plus"></i></div>
+                <div style="width:40px; height:40px; background:#222; border-radius:10px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-plus"></i></div>
             </div>
-            
-        </div>
-        <div style="position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 0.7rem; color: #444;">
-            حرية الرأي مكفولة • صوتك مسموع
         </div>
     </div>
 
-    <!-- واجهة الغرفة -->
     <div class="app-view" id="v-room">
         <div class="room-header">
             <div class="live-badge"><i class="fas fa-circle" style="font-size: 8px; color: var(--gold); margin-left:5px;"></i> مباشر</div>
-            <button class="copy-btn" onclick="copyLink()">نسخ الرابط</button>
+            <button class="copy-btn" onclick="openShareSheet()">دعوة الأصدقاء</button>
         </div>
 
         <div class="grid-container" id="grid"></div>
@@ -226,35 +184,56 @@
         <div class="filter-menu" id="filter-menu">
             <div class="filter-opt selected" onclick="applyFilter('none', this)">طبيعي</div>
             <div class="filter-opt" onclick="applyFilter('deep', this)">وقور</div>
-            <div class="filter-opt" onclick="applyFilter('radio', this)">إذاعة</div>
             <div class="filter-opt" onclick="applyFilter('echo', this)">صدى</div>
         </div>
 
         <div class="dock">
             <button class="dock-btn active" id="mic-btn" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
-            
-            <!-- زر الخروج (X) -->
-            <button class="dock-btn danger" onclick="exitToMenu()"><i class="fas fa-times" style="font-size: 1.4rem;"></i></button>
-            
+            <button class="dock-btn danger" onclick="exitToMenu()"><i class="fas fa-times"></i></button>
             <button class="dock-btn" onclick="toggleFilters()"><i class="fas fa-sliders-h"></i></button>
         </div>
         
-        <div id="audio-streams" style="display:none;"></div>
+        <div id="audio-container"></div>
     </div>
 
-    <!-- بوابة الدخول -->
+    <div class="share-overlay" id="share-overlay" onclick="closeShareSheet()"></div>
+    <div class="share-sheet" id="share-sheet">
+        <div style="width: 40px; height: 5px; background: #333; border-radius: 10px; margin: 0 auto 30px;"></div>
+        <h3 class="share-title">مشاركة المساحة</h3>
+        <div class="share-grid">
+            <div class="share-item" onclick="shareTo('whatsapp')">
+                <div class="share-icon whatsapp"><i class="fab fa-whatsapp"></i></div>
+                <span class="share-label">واتساب</span>
+            </div>
+            <div class="share-item" onclick="shareTo('telegram')">
+                <div class="share-icon telegram"><i class="fab fa-telegram-plane"></i></div>
+                <span class="share-label">تليجرام</span>
+            </div>
+            <div class="share-item" onclick="shareTo('facebook')">
+                <div class="share-icon facebook"><i class="fab fa-facebook-f"></i></div>
+                <span class="share-label">فيسبوك</span>
+            </div>
+            <div class="share-item" onclick="copyLinkAction()">
+                <div class="share-icon copy-link-item"><i class="fas fa-link"></i></div>
+                <span class="share-label">نسخ</span>
+            </div>
+        </div>
+    </div>
+
     <div class="audio-gate" id="audio-gate">
-        <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--white); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 0 30px rgba(255,255,255,0.2);">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
             <i class="fas fa-microphone-alt" style="color: black; font-size: 2rem;"></i>
         </div>
-        <h2 style="color: white; margin-bottom: 10px; font-weight: 700;">الميكروفون مطلوب</h2>
-        <p style="color: #888; font-size: 0.9rem; margin-bottom: 30px;">اضغط للسماح بالوصول والمشاركة</p>
-        <button onclick="confirmEntry()" style="width: 200px; padding: 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer;">دخول</button>
+        <h2 style="color: white; margin-bottom: 10px;">تفعيل الصوت</h2>
+        <p style="color: #888; font-size: 0.9rem; margin-bottom: 30px;">يجب الضغط للسماح بسماع الآخرين</p>
+        <button onclick="confirmEntry()" style="width: 200px; padding: 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer;">دخول الآن</button>
     </div>
+
+    <div class="toast-container" id="toast-container"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAjE-2q6PONBkCin9ZN22gDp9Q8pAH9ZW8",
@@ -265,262 +244,248 @@
             messagingSenderId: "742801388214",
             appId: "1:742801388214:web:32a305a8057b0582c5ec17"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let user = JSON.parse(localStorage.getItem('voice_freedom_user')) || {
-            id: 'u_' + Date.now().toString(36),
-            code: Math.floor(100 + Math.random() * 900)
-        };
-        localStorage.setItem('voice_freedom_user', JSON.stringify(user));
-        
-        let activeRoom = null;
-        let localStream = null;
-        let peer = null;
-        let myPeerId = null;
-        let audioCtx, audioSource, audioDestination, currentFilterNode;
+        let user = JSON.parse(localStorage.getItem('vf_user')) || { id: 'u' + Math.random().toString(36).substr(2,9), code: Math.floor(100+Math.random()*900) };
+        localStorage.setItem('vf_user', JSON.stringify(user));
+
+        let localStream, peer, myPeerId, activeRoom;
+        let audioCtx, audioSource, audioDestination, currentFilter;
         let isMuted = false;
+        let calls = {};
+        let roomRef = null;
 
-        // عند تحميل الصفحة
         window.onload = () => {
-            document.getElementById('id-text').innerHTML = `الهوية الرقمية: <span style="font-family:'Outfit'">${user.code}</span>`;
-            
-            // التحقق مما إذا كان هناك رابط دعوة
-            if (new URLSearchParams(location.search).get('room')) {
-                activeRoom = new URLSearchParams(location.search).get('room');
-                // حفظ الغرفة مباشرة في الذاكرة لتكون هي "الغرفة الأخيرة"
-                localStorage.setItem('last_visited_room', activeRoom);
-                document.getElementById('audio-gate').classList.add('show');
-            } else {
-                updateHomeButtons();
-            }
+            document.getElementById('id-text').innerHTML = `هويتك: <b>${user.code}</b>`;
+            const urlRoom = new URLSearchParams(location.search).get('room');
+            if(urlRoom) { activeRoom = urlRoom; document.getElementById('audio-gate').classList.add('show'); }
+            updateUI();
         };
 
-        // تحديث حالة الأزرار في الواجهة
-        function updateHomeButtons() {
-            const lastRoom = localStorage.getItem('last_visited_room');
+        function updateUI() {
+            const last = localStorage.getItem('last_room');
             const btn = document.getElementById('btn-rejoin');
-            if (lastRoom) {
-                btn.classList.remove('disabled');
-                btn.querySelector('p').innerText = "استكمال: " + lastRoom.substring(0,8) + "...";
-            } else {
-                btn.classList.add('disabled');
-                btn.querySelector('p').innerText = "لا توجد غرف محفوظة";
-            }
+            if(last) { btn.style.opacity = '1'; document.getElementById('last-room-txt').innerText = "غرفة: " + last; btn.onclick = rejoinLastRoom; }
+            else { btn.style.opacity = '0.5'; btn.onclick = null; }
         }
 
-        // 1. إنشاء غرفة جديدة (يمسح القديمة)
-        window.createNewRoom = () => {
-            activeRoom = Date.now().toString(36);
-            localStorage.setItem('last_visited_room', activeRoom); // تحديث الذاكرة بالغرفة الجديدة
-            document.getElementById('audio-gate').classList.add('show');
+        window.showToast = (msg) => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
         };
 
-        // 2. الانضمام للغرفة السابقة
-        window.rejoinLastRoom = () => {
-            activeRoom = localStorage.getItem('last_visited_room');
-            if(activeRoom) {
-                document.getElementById('audio-gate').classList.add('show');
-            }
+        window.openShareSheet = () => { document.getElementById('share-overlay').classList.add('show'); document.getElementById('share-sheet').classList.add('show'); };
+        window.closeShareSheet = () => { document.getElementById('share-overlay').classList.remove('show'); document.getElementById('share-sheet').classList.remove('show'); };
+
+        window.copyLinkAction = () => {
+            const link = `${location.origin}${location.pathname}?room=${activeRoom}`;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast("تم نسخ الرابط");
+                closeShareSheet();
+            });
         };
 
-        // تأكيد الدخول (بعد المايكروفون)
+        window.shareTo = (platform) => {
+            const link = `${location.origin}${location.pathname}?room=${activeRoom}`;
+            const text = `انضم إلي في منبر الأحرار: `;
+            let url = '';
+            if(platform === 'whatsapp') url = `https://wa.me/?text=${encodeURIComponent(text + link)}`;
+            else if(platform === 'telegram') url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+            else if(platform === 'facebook') url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+            window.open(url, '_blank');
+            closeShareSheet();
+        };
+
+        window.createNewRoom = () => { activeRoom = Math.random().toString(36).substr(2,8); localStorage.setItem('last_room', activeRoom); document.getElementById('audio-gate').classList.add('show'); };
+        window.rejoinLastRoom = () => { activeRoom = localStorage.getItem('last_room'); document.getElementById('audio-gate').classList.add('show'); };
+
         window.confirmEntry = async () => {
             try {
-                // إعداد الصوت
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-                await audioCtx.resume();
-                
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                localStream = stream;
-                
-                audioSource = audioCtx.createMediaStreamSource(stream);
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if(audioCtx.state === 'suspended') await audioCtx.resume();
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                audioSource = audioCtx.createMediaStreamSource(localStream);
                 audioDestination = audioCtx.createMediaStreamDestination();
                 audioSource.connect(audioDestination);
-                initVisualizer(audioSource, user.id);
-
-                // إعداد الاتصال
+                
                 peer = new Peer(user.id);
-                peer.on('open', (id) => {
-                    myPeerId = id;
-                    joinFirebaseRoom();
-                });
-                peer.on('call', (call) => {
+                peer.on('open', id => { myPeerId = id; startRoom(); });
+                peer.on('call', call => {
                     call.answer(audioDestination.stream);
-                    call.on('stream', (st) => playAudio(st, call.peer));
+                    call.on('stream', stream => handleRemoteStream(stream, call.peer));
                 });
+                peer.on('error', err => console.log(err));
 
-                // تبديل الواجهة
                 document.getElementById('audio-gate').classList.remove('show');
                 document.getElementById('v-home').classList.remove('active');
                 document.getElementById('v-room').classList.add('active');
-
-            } catch (e) {
-                alert("تعذر الوصول للميكروفون.");
-            }
+            } catch(e) { showToast("يرجى السماح باستخدام الميكروفون"); }
         };
 
-        // زر الخروج للواجهة (X)
-        window.exitToMenu = async () => {
-            // 1. إيقاف الصوت
+        function startRoom() {
+            roomRef = ref(db, `rooms/${activeRoom}/users/${user.id}`);
+            set(roomRef, { code: user.code, peerId: myPeerId });
+            onDisconnect(roomRef).remove();
+
+            onValue(ref(db, `rooms/${activeRoom}/users`), (snap) => {
+                const users = snap.val() || {};
+                renderUsers(users);
+                Object.values(users).forEach(u => {
+                    if(u.peerId !== myPeerId && !calls[u.peerId]) {
+                        const call = peer.call(u.peerId, audioDestination.stream);
+                        call.on('stream', stream => handleRemoteStream(stream, u.peerId));
+                        calls[u.peerId] = call;
+                    }
+                });
+            });
+        }
+
+        function handleRemoteStream(stream, peerId) {
+            let audio = document.getElementById('audio-' + peerId);
+            if(!audio) {
+                audio = document.createElement('audio');
+                audio.id = 'audio-' + peerId;
+                audio.autoplay = true;
+                audio.playsInline = true;
+                document.getElementById('audio-container').appendChild(audio);
+            }
+            audio.srcObject = stream;
+            
+            const remoteCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = remoteCtx.createMediaStreamSource(stream);
+            monitorVolume(source, peerId);
+        }
+
+        function monitorVolume(source, id) {
+            const analyser = (source.context || audioCtx).createAnalyser();
+            analyser.fftSize = 32;
+            source.connect(analyser);
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            
+            const check = () => {
+                if(!document.getElementById('v-room').classList.contains('active')) return;
+                analyser.getByteFrequencyData(data);
+                const vol = data.reduce((a,b) => a+b) / data.length;
+                
+                const waveContainer = document.getElementById('wave-' + id);
+                if(waveContainer) {
+                    if(vol > 15) {
+                        waveContainer.classList.add('speaking');
+                    } else {
+                        waveContainer.classList.remove('speaking');
+                    }
+                }
+                requestAnimationFrame(check);
+            };
+            check();
+        }
+
+        function renderUsers(users) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            const list = Object.values(users);
+            grid.className = 'grid-container ' + (list.length <= 1 ? 'layout-1' : list.length === 2 ? 'layout-2' : 'layout-more');
+            
+            list.forEach(u => {
+                const isMe = u.peerId === myPeerId;
+                grid.innerHTML += `
+                    <div class="user-card">
+                        <div class="card-avatar">${u.code}</div>
+                        
+                        <div class="voice-wave-container" id="wave-${u.peerId}">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+
+                        <div style="font-size:0.75rem; color:#888; margin-top:5px;">${isMe ? 'أنت' : 'مشارك'}</div>
+                    </div>
+                `;
+            });
+            if(audioSource) monitorVolume(audioSource, myPeerId);
+        }
+
+        window.toggleMic = () => {
+            isMuted = !isMuted;
+            localStream.getAudioTracks()[0].enabled = !isMuted;
+            const btn = document.getElementById('mic-btn');
+            btn.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+            btn.style.background = isMuted ? '#444' : '#fff';
+            btn.style.color = isMuted ? '#fff' : '#000';
+            showToast(isMuted ? "تم كتم الميكروفون" : "الميكروفون يعمل");
+        };
+
+        window.exitToMenu = () => {
+            if (roomRef) {
+                remove(roomRef);
+                roomRef = null;
+            }
+
             if(localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
-            if(audioCtx) {
-                audioCtx.close();
-                audioCtx = null;
-            }
 
-            // 2. إغلاق Peer
-            if(peer) {
+            if (peer) {
                 peer.destroy();
                 peer = null;
             }
 
-            // 3. مسح المستخدم من فايربيس (اختياري: للخروج النظيف)
-            if(activeRoom) {
-                await remove(ref(db, `rooms/${activeRoom}/users/${user.id}`));
-            }
+            calls = {};
+            myPeerId = null;
+            activeRoom = null;
+            isMuted = false;
+            
+            document.getElementById('audio-container').innerHTML = '';
 
-            // 4. تنظيف الواجهة
-            document.getElementById('grid').innerHTML = '';
-            document.getElementById('audio-streams').innerHTML = '';
-
-            // 5. العودة للواجهة وتحديث الأزرار
             document.getElementById('v-room').classList.remove('active');
             document.getElementById('v-home').classList.add('active');
             
-            // مسح باراميتر الرابط لعدم العودة للغرفة عند التحديث
-            window.history.pushState({}, document.title, window.location.pathname);
-            
-            updateHomeButtons();
+            const btn = document.getElementById('mic-btn');
+            btn.innerHTML = '<i class="fas fa-microphone"></i>';
+            btn.style.background = '#fff';
+            btn.style.color = '#000';
+
+            window.history.replaceState({}, document.title, window.location.pathname);
+            updateUI();
         };
-
-        // --- باقي دوال الفايربيس والصوت (نفس المنطق السابق) ---
-        
-        function joinFirebaseRoom() {
-            const refUser = ref(db, `rooms/${activeRoom}/users/${user.id}`);
-            set(refUser, { code: user.code, peerId: myPeerId, joinedAt: Date.now() });
-            
-            onValue(ref(db, `rooms/${activeRoom}`), (snap) => {
-                // إذا خرجنا ورجعنا، نتأكد أننا في وضع الغرفة
-                if(document.getElementById('v-room').classList.contains('active')) {
-                    if(snap.exists() && snap.val().users) {
-                        renderGrid(snap.val().users);
-                        connectPeers(snap.val().users);
-                    } else {
-                        document.getElementById('grid').innerHTML = '<div style="text-align:center; opacity:0.5; grid-column:span 2;">في انتظار انضمام الآخرين...</div>';
-                    }
-                }
-            });
-        }
-
-        function renderGrid(users) {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
-            const arr = Object.values(users).sort((a,b) => a.joinedAt - b.joinedAt);
-            
-            // Layout Logic
-            grid.className = 'grid-container';
-            if (arr.length === 1) grid.classList.add('layout-1');
-            else if (arr.length === 2) grid.classList.add('layout-2');
-            else grid.classList.add('layout-more');
-
-            arr.forEach(u => {
-                const isMe = u.peerId === myPeerId;
-                const div = document.createElement('div');
-                div.className = 'user-card';
-                div.id = `card-${u.peerId}`;
-                div.innerHTML = `
-                    <div class="card-avatar">${u.code}</div>
-                    <div class="status-dot" id="dot-${u.peerId}"></div>
-                    <div style="font-size: 0.8rem; color: #666;">${isMe ? 'أنت' : 'مشارك'}</div>
-                    ${isMe && isMuted ? '<div style="font-size:0.7rem; color:#c60000">مكتوم</div>' : ''}
-                `;
-                grid.appendChild(div);
-            });
-        }
-
-        const connected = {};
-        function connectPeers(users) {
-            Object.values(users).forEach(u => {
-                if(u.peerId !== myPeerId && !connected[u.peerId]) {
-                    const call = peer.call(u.peerId, audioDestination.stream);
-                    call.on('stream', (s) => playAudio(s, u.peerId));
-                    connected[u.peerId] = call;
-                }
-            });
-        }
-
-        function playAudio(stream, id) {
-            if(document.getElementById(`aud-${id}`)) return;
-            const aud = document.createElement('audio');
-            aud.id = `aud-${id}`; aud.srcObject = stream; 
-            aud.autoplay = true; aud.playsInline = true;
-            document.getElementById('audio-streams').appendChild(aud);
-            
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const src = ctx.createMediaStreamSource(stream);
-            initVisualizer(src, id, ctx);
-        }
-
-        function initVisualizer(src, id, ctx = audioCtx) {
-            const analyser = ctx.createAnalyser();
-            analyser.fftSize = 32;
-            src.connect(analyser);
-            const data = new Uint8Array(analyser.frequencyBinCount);
-            const loop = () => {
-                if(!document.getElementById('v-room').classList.contains('active')) return;
-                analyser.getByteFrequencyData(data);
-                const vol = data[4];
-                const dot = document.getElementById(id === user.id ? `dot-${myPeerId}` : `dot-${id}`);
-                if(dot) {
-                    if(vol > 20) dot.classList.add('speaking');
-                    else dot.classList.remove('speaking');
-                }
-                requestAnimationFrame(loop);
-            };
-            loop();
-        }
 
         window.toggleFilters = () => document.getElementById('filter-menu').classList.toggle('show');
-        window.toggleMic = () => {
-            isMuted = !isMuted;
-            if(localStream) localStream.getAudioTracks()[0].enabled = !isMuted;
-            const btn = document.getElementById('mic-btn');
-            btn.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-            btn.style.color = isMuted ? "#888" : "#000";
-            // تحديث سريع للواجهة
-            renderGrid({[user.id]: {code:user.code, peerId:myPeerId, joinedAt:0}}); 
-        };
         
-        window.applyFilter = (type, elem) => {
-            document.querySelectorAll('.filter-opt').forEach(el => el.classList.remove('selected'));
-            elem.classList.add('selected');
+        window.applyFilter = (type, el) => {
+            document.querySelectorAll('.filter-opt').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
             document.getElementById('filter-menu').classList.remove('show');
+            
             audioSource.disconnect();
-            if(currentFilterNode) currentFilterNode.disconnect();
-            if(type === 'none') { audioSource.connect(audioDestination); }
-            else {
-                let node;
-                if(type === 'deep') { node = audioCtx.createBiquadFilter(); node.type = 'lowpass'; node.frequency.value = 600; }
-                else if(type === 'radio') { node = audioCtx.createBiquadFilter(); node.type = 'bandpass'; node.frequency.value = 2000; node.Q.value = 1; }
-                else if(type === 'echo') { 
-                    node = audioCtx.createDelay(); node.delayTime.value = 0.3;
-                    const fb = audioCtx.createGain(); fb.gain.value = 0.4;
-                    node.connect(fb); fb.connect(node);
-                    audioSource.connect(audioDestination); audioSource.connect(node); node.connect(audioDestination);
-                    currentFilterNode = node; return;
-                }
-                if(node) { audioSource.connect(node); node.connect(audioDestination); currentFilterNode = node; }
+            if(currentFilter) currentFilter.disconnect();
+            
+            if(type === 'none') {
+                audioSource.connect(audioDestination);
+            } else if(type === 'deep') {
+                const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 500;
+                audioSource.connect(f); f.connect(audioDestination); currentFilter = f;
+            } else if(type === 'echo') {
+                const delay = audioCtx.createDelay(); delay.delayTime.value = 0.3;
+                const feedback = audioCtx.createGain(); feedback.gain.value = 0.3;
+                delay.connect(feedback); feedback.connect(delay);
+                
+                audioSource.connect(audioDestination);
+                audioSource.connect(delay); delay.connect(audioDestination);
+                currentFilter = delay;
             }
-        };
-
-        window.copyLink = () => {
-            navigator.clipboard.writeText(`${location.origin}${location.pathname}?room=${activeRoom}`);
-            alert("تم نسخ الرابط");
+            showToast("تم تحديث الفلتر");
         };
     </script>
 </body>
