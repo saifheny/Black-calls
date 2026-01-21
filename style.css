@@ -77,14 +77,17 @@ h1 { font-weight: 900; font-size: 2.2rem; margin-bottom: 5px; color: #fff; lette
 .main-btn h3 { font-size: 1rem; font-weight: 700; margin-bottom: 3px; color: #eee; }
 .main-btn p { font-size: 0.8rem; color: #777; }
 
+/* تعديل التذييل ليكون في المنتصف */
 .footer-copyright {
     margin-top: auto;
-    padding-bottom: 20px;
-    font-size: 10px;
-    color: #333;
+    padding-bottom: 25px;
+    font-size: 11px;
+    color: #444;
     font-family: Arial, sans-serif;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     text-transform: uppercase;
+    text-align: center;
+    width: 100%;
 }
 
 .room-header { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 20; }
@@ -122,6 +125,16 @@ h1 { font-weight: 900; font-size: 2.2rem; margin-bottom: 5px; color: #fff; lette
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
     border: 1px solid #444; color: #888; font-size: 0.7rem;
 }
+
+/* زر الطرد */
+.kick-btn {
+    position: absolute; top: -8px; left: -8px;
+    background: #550000; width: 26px; height: 26px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 1px solid #800; color: #fff; font-size: 0.75rem;
+    cursor: pointer; z-index: 10;
+}
+.kick-btn:active { transform: scale(0.9); }
 
 .voice-wave-container { position: absolute; bottom: 15px; right: 15px; display: flex; align-items: flex-end; gap: 2px; height: 16px; opacity: 0; transition: opacity 0.2s; }
 .voice-wave-container.speaking { opacity: 1; }
