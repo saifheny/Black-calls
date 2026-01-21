@@ -4,30 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>منبر الأحرار | صوت الحرية والمكالمات المجانية</title>
+    <title>منبر الأحرار</title>
     
-    <meta name="description" content="منصة منبر الأحرار للمكالمات الصوتية المجانية والدردشة المجهولة. تواصل بحرية تامة، بدون تسجيل، وبجودة صوت عالية. مساحات صوتية للنقاش الحر.">
-    
-    <meta name="keywords" content="مكالمات مجانية, دردشة صوتية, منبر الأحرار, اتصال مجهول, شات صوتي, Voice Chat, Free Calls, Anonymous Calls, WebRTC, Freedom Voice, Dove, Peace, حوار مفتوح, نقاش سياسي, مكالمات انترنت, صوت الحرية, دردشة بدون تسجيل">
-    
-    <meta name="robots" content="index, follow">
-    <meta name="googlebot" content="index, follow">
-
-    <link rel="icon" href="https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg">
-
-    <meta property="og:title" content="منبر الأحرار - مساحات صوتية حرة">
-    <meta property="og:description" content="انضم للنقاش الآن. مكالمات صوتية جماعية مجانية وبدون قيود. صوتك مسموع.">
-    <meta property="og:image" content="https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg">
-    <meta property="og:url" content="">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="منبر الأحرار">
-    <meta property="og:locale" content="ar_AR">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="منبر الأحرار | Free Voice Chat">
-    <meta name="twitter:description" content="تواصل بحرية تامة عبر منصة منبر الأحرار. مكالمات صوتية عالية الجودة ومجانية.">
-    <meta name="twitter:image" content="https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg">
+    <meta name="description" content="منصة منبر الأحرار للمكالمات الصوتية المجانية والدردشة المجهولة.">
+    <link rel="icon" href="https://i.postimg.cc/tJP044pN/Whats-App-Image-2026-01-21-at-7-28-33-PM.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/tJP044pN/Whats-App-Image-2026-01-21-at-7-28-33-PM.png">
 
     <meta name="theme-color" content="#000000">
     
@@ -36,24 +17,6 @@
     <link rel="stylesheet" href="style.css">
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "منبر الأحرار",
-      "alternateName": "Freedom Voice",
-      "applicationCategory": "CommunicationApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "منصة تواصل صوتي فوري مجانية تتيح للمستخدمين إنشاء غرف نقاش بحرية تامة.",
-      "image": "https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg"
-    }
-    </script>
 </head>
 <body>
 
@@ -66,52 +29,104 @@
     <div class="install-popup-overlay" id="install-popup">
         <div class="install-card">
             <div class="install-icon">
-                <img src="https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg" alt="App Icon" style="width:100%; height:100%; object-fit:cover; border-radius: 22px;">
+                <img src="https://i.postimg.cc/tJP044pN/Whats-App-Image-2026-01-21-at-7-28-33-PM.png" alt="Icon" style="width:100%; height:100%; border-radius:22px; object-fit:cover;">
             </div>
-            <h3 class="install-title">تثبيت التطبيق</h3>
-            <p class="install-desc">تجربة أفضل، وصول أسرع.</p>
-            <button class="btn-install" onclick="triggerInstall()">تثبيت</button>
-            <button class="btn-close-install" onclick="closeInstallPopup()">إغلاق</button>
+            <h3 class="install-title" id="txt-install-title">تثبيت التطبيق</h3>
+            <p class="install-desc" id="txt-install-desc">وصول أسرع وتجربة أفضل.</p>
+            <button class="btn-install" onclick="triggerInstall()" id="btn-install-action">تثبيت</button>
+            <button class="btn-close-install" onclick="closeInstallPopup()" id="btn-install-close">إغلاق</button>
+        </div>
+    </div>
+
+    <div class="overlay-backdrop" id="onboarding-overlay">
+        <i class="fas fa-arrow-down tutorial-pointer" id="tutorial-arrow"></i>
+
+        <div class="modal-card">
+            <div class="onboarding-steps active" id="step-1">
+                <div class="step-image"><i class="fas fa-hand-sparkles"></i></div>
+                <h3 class="step-title" id="tut-title-1">أهلاً بك في منبر الأحرار</h3>
+                <p class="step-desc" id="tut-desc-1">مساحة صوتية حرة، آمنة، وبدون قيود. <br> دعنا نأخذك في جولة سريعة.</p>
+                <div class="step-dots">
+                    <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+                </div>
+                <button class="btn-primary" onclick="nextStep(2)" id="tut-btn-1">التالي</button>
+            </div>
+
+            <div class="onboarding-steps" id="step-2">
+                <div class="step-image"><i class="fas fa-microphone-lines"></i></div>
+                <h3 class="step-title" id="tut-title-2">ابدأ البث</h3>
+                <p class="step-desc" id="tut-desc-2">اضغط هنا لإنشاء مساحة نقاش جديدة. صوتك سيسمعه الجميع.</p>
+                <div class="step-dots">
+                    <span class="dot"></span><span class="dot active"></span><span class="dot"></span>
+                </div>
+                <button class="btn-primary" onclick="nextStep(3)" id="tut-btn-2">التالي</button>
+            </div>
+
+            <div class="onboarding-steps" id="step-3">
+                <div class="step-image"><i class="fas fa-history"></i></div>
+                <h3 class="step-title" id="tut-title-3">استكمل حديثك</h3>
+                <p class="step-desc" id="tut-desc-3">إذا غادرت الغرفة، يمكنك العودة إليها فوراً من هنا بضغطة واحدة.</p>
+                <div class="step-dots">
+                    <span class="dot"></span><span class="dot"></span><span class="dot active"></span>
+                </div>
+                <button class="btn-primary" onclick="finishTutorial()" id="tut-btn-3">ابدأ الآن</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="privacy-page" id="privacy-page">
+        <div class="privacy-header">
+            <div class="btn-back" onclick="closePrivacy()"><i class="fas fa-arrow-right" id="arrow-icon"></i></div>
+        </div>
+
+        <div class="privacy-body">
+            <h1 class="privacy-title" id="priv-title">سياسة الخصوصية</h1>
+            <div class="privacy-section">
+                <p class="privacy-text" id="priv-text-1">هذا الموقع يدار بواسطة مؤسسة <span class="privacy-highlight">S.A</span>.</p>
+                <p class="privacy-text" id="priv-text-2">المتحكم الرئيسي في الموقع هو <span class="privacy-highlight">"سيف"</span>.</p>
+                <p class="privacy-text" id="priv-text-3">نحن لا نجمع أي بيانات شخصية، ولا نقوم بتسجيل المكالمات. خصوصيتك هي أولويتنا القصوى.</p>
+            </div>
         </div>
     </div>
 
     <div class="app-view active" id="v-home">
+        <button class="lang-switch-btn" onclick="toggleAppLanguage()">EN</button>
+
         <div class="home-content">
-            <div class="logo-container">
-                <img src="https://i.postimg.cc/657cRZNP/Whats-App-Image-2026-01-21-at-5-40-23-PM.jpg" alt="Logo" style="width:100%; height:100%; object-fit:cover; border-radius: 35px;">
-            </div>
-            <h1>منبر الأحرار</h1>
-            <div class="slogan">صوت الحقيقة</div>
+            <img src="https://i.postimg.cc/tJP044pN/Whats-App-Image-2026-01-21-at-7-28-33-PM.png" class="hero-logo" alt="Logo">
+            
+            <h1 id="app-title">منبر الأحرار</h1>
             <div class="id-badge" id="id-text">جاري الاتصال...</div>
 
             <div class="action-buttons">
                 <div class="main-btn" id="btn-rejoin" onclick="rejoinLastRoom()">
                     <div class="icon-box"><i class="fas fa-history"></i></div>
                     <div class="text-box">
-                        <h3>العودة للغرفة</h3>
+                        <h3 id="txt-rejoin-title">العودة للغرفة</h3>
                         <p id="last-room-txt">استكمال النقاش</p>
                     </div>
                 </div>
 
-                <div class="main-btn highlight" onclick="createNewRoom()">
+                <div class="main-btn highlight" id="btn-create" onclick="createNewRoom()">
                     <div class="icon-box"><i class="fas fa-microphone-lines"></i></div>
                     <div class="text-box">
-                        <h3>مساحة جديدة</h3>
-                        <p>ابدأ البث الآن</p>
+                        <h3 id="txt-create-title">مساحة جديدة</h3>
+                        <p id="txt-create-desc">ابدأ البث الآن</p>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="footer-copyright">
-            This site belongs to the S.A institution.
+            <span id="txt-footer-sa">This site belongs to the S.A institution.</span>
+            <span class="footer-link" onclick="openPrivacy()" id="txt-footer-link">Privacy Policy | سياسة الخصوصية</span>
         </div>
     </div>
 
     <div class="app-view" id="v-room">
         <div class="room-header">
             <div class="live-indicator">
-                <span class="pulse-dot"></span> مباشر
+                <span class="pulse-dot"></span> <span id="txt-live">مباشر</span>
             </div>
             <button class="header-btn" onclick="openShareSheet()"><i class="fas fa-share-nodes"></i></button>
         </div>
@@ -119,9 +134,9 @@
         <div class="grid-container" id="grid"></div>
 
         <div class="filter-menu" id="filter-menu">
-            <div class="filter-opt selected" onclick="applyFilter('none', this)">طبيعي</div>
-            <div class="filter-opt" onclick="applyFilter('deep', this)">إذاعي</div>
-            <div class="filter-opt" onclick="applyFilter('echo', this)">قاعة</div>
+            <div class="filter-opt selected" onclick="applyFilter('none', this)" id="opt-normal">طبيعي</div>
+            <div class="filter-opt" onclick="applyFilter('deep', this)" id="opt-radio">إذاعي</div>
+            <div class="filter-opt" onclick="applyFilter('echo', this)" id="opt-hall">قاعة</div>
         </div>
 
         <div class="dock-container">
@@ -138,23 +153,23 @@
     <div class="share-overlay" id="share-overlay" onclick="closeShareSheet()"></div>
     <div class="share-sheet" id="share-sheet">
         <div class="sheet-handle"></div>
-        <h3 class="share-title">دعوة للنقاش</h3>
+        <h3 class="share-title" id="txt-share-title">دعوة للنقاش</h3>
         <div class="share-grid">
             <div class="share-item" onclick="shareTo('whatsapp')">
                 <div class="share-icon whatsapp"><i class="fab fa-whatsapp"></i></div>
-                <span>واتساب</span>
+                <span id="txt-share-wa">واتساب</span>
             </div>
             <div class="share-item" onclick="shareTo('telegram')">
                 <div class="share-icon telegram"><i class="fab fa-telegram-plane"></i></div>
-                <span>تيليجرام</span>
+                <span id="txt-share-tg">تيليجرام</span>
             </div>
             <div class="share-item" onclick="shareTo('facebook')">
                 <div class="share-icon facebook"><i class="fab fa-facebook-f"></i></div>
-                <span>فيسبوك</span>
+                <span id="txt-share-fb">فيسبوك</span>
             </div>
             <div class="share-item" onclick="copyLinkAction()">
                 <div class="share-icon copy-link-item"><i class="fas fa-link"></i></div>
-                <span>نسخ</span>
+                <span id="txt-share-cp">نسخ</span>
             </div>
         </div>
     </div>
@@ -162,14 +177,218 @@
     <div class="audio-gate" id="audio-gate">
         <div class="gate-content">
             <div class="gate-icon"><i class="fas fa-headphones-simple"></i></div>
-            <h2>تأكيد الدخول</h2>
-            <p>الميكروفون مطلوب للمشاركة</p>
-            <button class="gate-btn" onclick="confirmEntry()">دخول الغرفة</button>
+            <h2 id="gate-title">تأكيد الدخول</h2>
+            <p id="gate-desc">الميكروفون مطلوب للمشاركة</p>
+            <button class="gate-btn" onclick="confirmEntry()" id="gate-btn">دخول الغرفة</button>
         </div>
     </div>
 
     <div class="toast-container" id="toast-container"></div>
 
     <script src="script.js" type="module"></script>
+    
+    <script>
+        const translations = {
+            ar: {
+                appTitle: "منبر الأحرار",
+                idPrefix: "معرفك: ",
+                rejoinTitle: "العودة للغرفة",
+                rejoinDesc: "استكمال النقاش",
+                createTitle: "مساحة جديدة",
+                createDesc: "ابدأ البث الآن",
+                footerSA: "This site belongs to the S.A institution.",
+                footerLink: "Privacy Policy | سياسة الخصوصية",
+                installTitle: "تثبيت التطبيق",
+                installDesc: "وصول أسرع وتجربة أفضل.",
+                btnInstall: "تثبيت",
+                btnClose: "إغلاق",
+                tut1Title: "أهلاً بك في منبر الأحرار",
+                tut1Desc: "مساحة صوتية حرة، آمنة، وبدون قيود. <br> دعنا نأخذك في جولة سريعة.",
+                tut2Title: "ابدأ البث",
+                tut2Desc: "اضغط هنا لإنشاء مساحة نقاش جديدة. صوتك سيسمعه الجميع.",
+                tut3Title: "استكمل حديثك",
+                tut3Desc: "إذا غادرت الغرفة، يمكنك العودة إليها فوراً من هنا بضغطة واحدة.",
+                btnNext: "التالي",
+                btnStart: "ابدأ الآن",
+                privTitle: "سياسة الخصوصية",
+                priv1: 'هذا الموقع يدار بواسطة مؤسسة <span class="privacy-highlight">S.A</span>.',
+                priv2: 'المتحكم الرئيسي في الموقع هو <span class="privacy-highlight">"سيف"</span>.',
+                priv3: "نحن لا نجمع أي بيانات شخصية، ولا نقوم بتسجيل المكالمات. خصوصيتك هي أولويتنا القصوى.",
+                live: "مباشر",
+                optNormal: "طبيعي",
+                optRadio: "إذاعي",
+                optHall: "قاعة",
+                shareTitle: "دعوة للنقاش",
+                wa: "واتساب", tg: "تيليجرام", fb: "فيسبوك", cp: "نسخ",
+                gateTitle: "تأكيد الدخول",
+                gateDesc: "الميكروفون مطلوب للمشاركة",
+                gateBtn: "دخول الغرفة",
+                roomPrefix: "غرفة: ",
+                me: "أنت",
+                speaker: "متحدث"
+            },
+            en: {
+                appTitle: "Freedom Voice",
+                idPrefix: "ID: ",
+                rejoinTitle: "Rejoin Room",
+                rejoinDesc: "Resume Discussion",
+                createTitle: "New Space",
+                createDesc: "Start Broadcasting",
+                footerSA: "This site belongs to the S.A institution.",
+                footerLink: "Privacy Policy",
+                installTitle: "Install App",
+                installDesc: "Faster access and better experience.",
+                btnInstall: "Install",
+                btnClose: "Close",
+                tut1Title: "Welcome to Freedom Voice",
+                tut1Desc: "A free, secure, and unrestricted voice space. <br> Let's take a quick tour.",
+                tut2Title: "Start Broadcast",
+                tut2Desc: "Tap here to create a new discussion space. Your voice will be heard by everyone.",
+                tut3Title: "Resume Talk",
+                tut3Desc: "If you leave the room, you can instantly return from here with one click.",
+                btnNext: "Next",
+                btnStart: "Start Now",
+                privTitle: "Privacy Policy",
+                priv1: 'This site belongs to the <span class="privacy-highlight">S.A institution</span>.',
+                priv2: 'The controller is <span class="privacy-highlight">"Safe"</span> (Seif).',
+                priv3: "We do not collect any personal data or record calls. Your privacy is our top priority.",
+                live: "LIVE",
+                optNormal: "Normal",
+                optRadio: "Radio",
+                optHall: "Hall",
+                shareTitle: "Invite to Discuss",
+                wa: "WhatsApp", tg: "Telegram", fb: "Facebook", cp: "Copy",
+                gateTitle: "Confirm Entry",
+                gateDesc: "Microphone is required to participate",
+                gateBtn: "Enter Room",
+                roomPrefix: "Room: ",
+                me: "You",
+                speaker: "Speaker"
+            }
+        };
+
+        let currentLang = localStorage.getItem('app_lang') || 'ar';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLanguage(currentLang);
+
+            if (!localStorage.getItem('sawTutorial_v2')) {
+                setTimeout(() => {
+                    document.getElementById('onboarding-overlay').classList.add('show');
+                }, 800);
+            }
+        });
+
+        function toggleAppLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            localStorage.setItem('app_lang', currentLang);
+            applyLanguage(currentLang);
+        }
+
+        function applyLanguage(lang) {
+            const t = translations[lang];
+            const isRTL = lang === 'ar';
+            
+            document.documentElement.lang = lang;
+            document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+            document.querySelector('.lang-switch-btn').innerText = isRTL ? 'EN' : 'AR';
+            document.getElementById('arrow-icon').className = isRTL ? "fas fa-arrow-right" : "fas fa-arrow-left";
+
+            document.getElementById('app-title').innerText = t.appTitle;
+            document.getElementById('txt-rejoin-title').innerText = t.rejoinTitle;
+            document.getElementById('txt-create-title').innerText = t.createTitle;
+            document.getElementById('txt-create-desc').innerText = t.createDesc;
+            
+            // Footer Text Update
+            document.getElementById('txt-footer-sa').innerText = t.footerSA;
+            document.getElementById('txt-footer-link').innerText = t.footerLink;
+
+            document.getElementById('txt-install-title').innerText = t.installTitle;
+            document.getElementById('txt-install-desc').innerText = t.installDesc;
+            document.getElementById('btn-install-action').innerText = t.btnInstall;
+            document.getElementById('btn-install-close').innerText = t.btnClose;
+
+            document.getElementById('tut-title-1').innerText = t.tut1Title;
+            document.getElementById('tut-desc-1').innerHTML = t.tut1Desc;
+            document.getElementById('tut-btn-1').innerText = t.btnNext;
+
+            document.getElementById('tut-title-2').innerText = t.tut2Title;
+            document.getElementById('tut-desc-2').innerHTML = t.tut2Desc;
+            document.getElementById('tut-btn-2').innerText = t.btnNext;
+
+            document.getElementById('tut-title-3').innerText = t.tut3Title;
+            document.getElementById('tut-desc-3').innerHTML = t.tut3Desc;
+            document.getElementById('tut-btn-3').innerText = t.btnStart;
+
+            document.getElementById('priv-title').innerText = t.privTitle;
+            document.getElementById('priv-text-1').innerHTML = t.priv1;
+            document.getElementById('priv-text-2').innerHTML = t.priv2;
+            document.getElementById('priv-text-3').innerText = t.priv3;
+
+            document.getElementById('txt-live').innerText = t.live;
+            document.getElementById('opt-normal').innerText = t.optNormal;
+            document.getElementById('opt-radio').innerText = t.optRadio;
+            document.getElementById('opt-hall').innerText = t.optHall;
+
+            document.getElementById('txt-share-title').innerText = t.shareTitle;
+            document.getElementById('txt-share-wa').innerText = t.wa;
+            document.getElementById('txt-share-tg').innerText = t.tg;
+            document.getElementById('txt-share-fb').innerText = t.fb;
+            document.getElementById('txt-share-cp').innerText = t.cp;
+
+            document.getElementById('gate-title').innerText = t.gateTitle;
+            document.getElementById('gate-desc').innerText = t.gateDesc;
+            document.getElementById('gate-btn').innerText = t.gateBtn;
+
+            const last = localStorage.getItem('last_room');
+            if(last) {
+                document.getElementById('last-room-txt').innerText = t.rejoinDesc; 
+            }
+            
+            window.dispatchEvent(new CustomEvent('langChanged', { detail: { lang: lang, t: t } }));
+        }
+
+        function nextStep(stepNum) {
+            document.querySelectorAll('.onboarding-steps').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.main-btn').forEach(btn => btn.classList.remove('tutorial-highlight'));
+            document.getElementById('tutorial-arrow').style.display = 'none';
+
+            if (stepNum === 2) {
+                document.getElementById('step-2').classList.add('active');
+                const btn = document.getElementById('btn-create');
+                btn.classList.add('tutorial-highlight');
+                const arrow = document.getElementById('tutorial-arrow');
+                arrow.style.display = 'block';
+                const rect = btn.getBoundingClientRect();
+                arrow.style.top = (rect.top - 70) + 'px';
+                arrow.style.left = (rect.left + rect.width/2 - 20) + 'px';
+
+            } else if (stepNum === 3) {
+                document.getElementById('step-3').classList.add('active');
+                const btn = document.getElementById('btn-rejoin');
+                btn.classList.add('tutorial-highlight');
+                const arrow = document.getElementById('tutorial-arrow');
+                arrow.style.display = 'block';
+                const rect = btn.getBoundingClientRect();
+                arrow.style.top = (rect.top - 70) + 'px';
+                arrow.style.left = (rect.left + rect.width/2 - 20) + 'px';
+            }
+        }
+
+        function finishTutorial() {
+            document.getElementById('onboarding-overlay').classList.remove('show');
+            document.querySelectorAll('.main-btn').forEach(btn => btn.classList.remove('tutorial-highlight'));
+            document.getElementById('tutorial-arrow').style.display = 'none';
+            localStorage.setItem('sawTutorial_v2', 'true');
+        }
+
+        function openPrivacy() {
+            document.getElementById('privacy-page').classList.add('active');
+        }
+
+        function closePrivacy() {
+            document.getElementById('privacy-page').classList.remove('active');
+        }
+    </script>
 </body>
 </html>
