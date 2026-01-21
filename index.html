@@ -3,8 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>منبر الأحرار | مساحات صوتية</title>
-    <meta name="description" content="انضم إلى منبر الأحرار، منصة صوتية للنقاش الحر.">
+    
+    <title>منبر الأحرار | صوت الحرية والمكالمات المجانية</title>
+    
+    <meta name="description" content="منصة منبر الأحرار للمكالمات الصوتية المجانية والدردشة المجهولة. تواصل بحرية تامة، بدون تسجيل، وبجودة صوت عالية. مساحات صوتية للنقاش الحر.">
+    
+    <meta name="keywords" content="مكالمات مجانية, دردشة صوتية, منبر الأحرار, اتصال مجهول, شات صوتي, Voice Chat, Free Calls, Anonymous Calls, WebRTC, Freedom Voice, Dove, Peace, حوار مفتوح, نقاش سياسي, مكالمات انترنت, صوت الحرية, دردشة بدون تسجيل">
+    
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/9355/9355268.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9355/9355268.png">
+
+    <meta property="og:title" content="منبر الأحرار - مساحات صوتية حرة">
+    <meta property="og:description" content="انضم للنقاش الآن. مكالمات صوتية جماعية مجانية وبدون قيود. صوتك مسموع.">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/9355/9355268.png">
+    <meta property="og:url" content="">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="منبر الأحرار">
+    <meta property="og:locale" content="ar_AR">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="منبر الأحرار | Free Voice Chat">
+    <meta name="twitter:description" content="تواصل بحرية تامة عبر منصة منبر الأحرار. مكالمات صوتية عالية الجودة ومجانية.">
+    <meta name="twitter:image" content="https://cdn-icons-png.flaticon.com/512/9355/9355268.png">
+
     <meta name="theme-color" content="#000000">
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -12,14 +36,38 @@
     <link rel="stylesheet" href="style.css">
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "منبر الأحرار",
+      "alternateName": "Freedom Voice",
+      "applicationCategory": "CommunicationApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "منصة تواصل صوتي فوري مجانية تتيح للمستخدمين إنشاء غرف نقاش بحرية تامة.",
+      "image": "https://cdn-icons-png.flaticon.com/512/9355/9355268.png"
+    }
+    </script>
 </head>
 <body>
 
     <div class="bg-layer"></div>
 
+    <audio id="join-sound" preload="auto">
+        <source src="data:audio/mp3;base64,//uQRAAAAWMSLwUIYAPAAAAAAAAAAAAAFhpZgAAgiXYAD//uQRAAAAWMSLwUIYAPAAAAAAAAAAAAAFhpZgAAgiXYAD//uQRAAAAWMSLwUIYAPAAAAAAAAAAAAAFhpZgAAgiXYAD//uQZAAAAzgLgAAAAABBQAAABCRU5E" type="audio/mpeg">
+    </audio>
+
     <div class="install-popup-overlay" id="install-popup">
         <div class="install-card">
-            <div class="install-icon"><i class="fas fa-dove"></i></div>
+            <div class="install-icon">
+                <img src="https://cdn-icons-png.flaticon.com/512/9355/9355268.png" alt="Voice Icon" style="width:100%; height:100%; object-fit:contain;">
+            </div>
             <h3 class="install-title">تثبيت التطبيق</h3>
             <p class="install-desc">تجربة أفضل، وصول أسرع.</p>
             <button class="btn-install" onclick="triggerInstall()">تثبيت</button>
@@ -30,7 +78,7 @@
     <div class="app-view active" id="v-home">
         <div class="home-content">
             <div class="logo-container">
-                <div class="freedom-icon"><i class="fas fa-dove"></i></div>
+                <img src="https://cdn-icons-png.flaticon.com/512/9355/9355268.png" alt="Freedom Dove" style="width:70%; height:70%; object-fit:contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));">
             </div>
             <h1>منبر الأحرار</h1>
             <div class="slogan">صوت الحقيقة</div>
