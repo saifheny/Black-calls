@@ -28,6 +28,12 @@ let roomRef = null;
 let deferredPrompt;
 let roomOwnerId = null;
 let knownPeers = new Set();
+let currentTranslations = {}; 
+
+window.addEventListener('langChanged', (e) => {
+    currentTranslations = e.detail.t;
+    updateDynamicText();
+});
 
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(console.log); }
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-popup').classList.add('show'); });
@@ -43,7 +49,6 @@ window.triggerInstall = async () => {
 window.closeInstallPopup = () => document.getElementById('install-popup').classList.remove('show');
 
 window.onload = () => {
-    document.getElementById('id-text').innerHTML = `معرفك: ${user.code}`;
     const urlRoom = new URLSearchParams(location.search).get('room');
     if(urlRoom) { 
         activeRoom = urlRoom; 
@@ -53,18 +58,32 @@ window.onload = () => {
     updateUI();
 };
 
+function updateDynamicText() {
+    const prefix = currentTranslations.idPrefix || "معرفك: ";
+    document.getElementById('id-text').innerHTML = `${prefix}${user.code}`;
+    
+    const last = localStorage.getItem('last_room');
+    if(last) {
+        const roomPre = currentTranslations.roomPrefix || "غرفة: ";
+        document.getElementById('last-room-txt').innerText = roomPre + last;
+    }
+}
+
 function updateUI() {
     const last = localStorage.getItem('last_room');
     const btn = document.getElementById('btn-rejoin');
     if(last) { 
         btn.style.opacity = '1'; 
         btn.style.pointerEvents = 'all';
-        document.getElementById('last-room-txt').innerText = "غرفة: " + last; 
+        const roomPre = currentTranslations.roomPrefix || "غرفة: ";
+        document.getElementById('last-room-txt').innerText = roomPre + last; 
         btn.onclick = rejoinLastRoom; 
     } else { 
         btn.style.opacity = '0.4'; 
         btn.style.pointerEvents = 'none';
     }
+    
+    setTimeout(updateDynamicText, 100); 
 }
 
 let toastTimeout;
@@ -93,7 +112,7 @@ window.copyLinkAction = () => {
 
 window.shareTo = (platform) => {
     const link = `${location.origin}${location.pathname}?room=${activeRoom}`;
-    const text = `انضم للنقاش الصوتي المباشر على منبر الأحرار: `;
+    const text = `Join Freedom Voice: `;
     const urls = {
         whatsapp: `https://wa.me/?text=${encodeURIComponent(text + link)}`,
         telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`,
@@ -163,9 +182,9 @@ window.confirmEntry = async () => {
         peer.on('error', err => { 
             console.error(err); 
             if(err.type === 'peer-unavailable') {
-                showToast("المستخدم غير متصل حالياً");
+                showToast("User not available");
             } else {
-                showToast("جاري محاولة إعادة الاتصال..."); 
+                showToast("Retrying connection..."); 
             }
         });
 
@@ -179,7 +198,7 @@ window.confirmEntry = async () => {
 
     } catch(e) { 
         console.error(e);
-        showToast("يرجى السماح باستخدام المايكروفون"); 
+        showToast("Please allow microphone access"); 
     }
 };
 
@@ -201,7 +220,7 @@ function startRoom() {
         const users = snap.val() || {};
         
         if (document.getElementById('v-room').classList.contains('active') && !users[user.id]) {
-            showToast("تم إخراجك من الغرفة");
+            showToast("You have been kicked");
             setTimeout(exitToMenu, 1000);
             return;
         }
@@ -227,9 +246,9 @@ function startRoom() {
 }
 
 window.kickUser = (targetUserId) => {
-    if(confirm("هل أنت متأكد من طرد هذا المستخدم؟")) {
+    if(confirm("Kick this user?")) {
         remove(ref(db, `rooms/${activeRoom}/users/${targetUserId}`))
-        .then(() => showToast("تم طرد المستخدم"))
+        .then(() => showToast("User kicked"))
         .catch(e => console.error(e));
     }
 };
@@ -289,6 +308,8 @@ function renderUsers(users) {
     grid.className = 'grid-container ' + (list.length <= 1 ? 'layout-1' : list.length === 2 ? 'layout-2' : 'layout-more');
     
     const isOwner = (user.id === roomOwnerId);
+    const meTxt = currentTranslations.me || "أنت";
+    const spkTxt = currentTranslations.speaker || "متحدث";
 
     list.forEach(([uid, u]) => {
         const isMe = u.peerId === myPeerId;
@@ -308,7 +329,7 @@ function renderUsers(users) {
                     <div class="wave-bar"></div><div class="wave-bar"></div>
                     <div class="wave-bar"></div><div class="wave-bar"></div>
                 </div>
-                <div style="font-size:0.75rem; color:#666; margin-top:10px; font-weight:600;">${isMe ? 'أنت' : 'متحدث'}</div>
+                <div style="font-size:0.75rem; color:#666; margin-top:10px; font-weight:600;">${isMe ? meTxt : spkTxt}</div>
             </div>
         `;
     });
@@ -328,12 +349,10 @@ window.toggleMic = () => {
         btn.innerHTML = '<i class="fas fa-microphone"></i>';
         btn.classList.add('active');
     }
-    showToast(isMuted ? "تم كتم الصوت" : "أنت متصل الآن");
+    showToast(isMuted ? "Muted" : "Unmuted");
 };
 
 window.exitToMenu = () => {
-    window.open('https://www.effectivegatecpm.com/k8fisnjjc?key=afa7ea920578f74cea5997d670bbe78e', '_blank');
-
     if (roomRef) remove(roomRef);
     if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     if (peer) { peer.destroy(); peer = null; }
@@ -371,5 +390,5 @@ window.applyFilter = (type, el) => {
         audioSource.connect(delay); delay.connect(audioDestination);
         currentFilter = delay;
     }
-    showToast("تم تفعيل الفلتر");
+    showToast("Filter Applied");
 };
