@@ -33,6 +33,7 @@ let roomTimerInterval = null;
 let roomStartTime = null;
 let pendingAdmissionRef = null;
 let isAppInstalled = false;
+let isExiting = false;
 
 window.addEventListener('langChanged', (e) => {
     currentTranslations = e.detail.t;
@@ -281,6 +282,7 @@ window.cancelWaiting = () => {
 };
 
 function startRoom() {
+    isExiting = false;
     roomRef = ref(db, `rooms/${activeRoom}/users/${user.id}`);
     set(roomRef, { code: user.code, peerId: myPeerId, online: true, isMuted: false, handRaised: false });
     onDisconnect(roomRef).remove();
@@ -295,7 +297,7 @@ function startRoom() {
     });
     onValue(ref(db, `rooms/${activeRoom}/users`), (snap) => {
         const users = snap.val() || {};
-        if (document.getElementById('v-room').classList.contains('active') && !users[user.id]) {
+        if (!isExiting && document.getElementById('v-room').classList.contains('active') && !users[user.id]) {
             showToast("⛔ تم إزالتك من الغرفة");
             setTimeout(exitToMenu, 1000);
             return;
@@ -497,6 +499,7 @@ window.toggleSpeaker = () => {
 };
 
 window.exitToMenu = () => {
+    isExiting = true;
     if (roomRef) remove(roomRef);
     if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     if (peer) { peer.destroy(); peer = null; }
