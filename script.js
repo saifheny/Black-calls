@@ -258,6 +258,7 @@ window.confirmEntry = async () => {
 };
 
 function enterRoom() {
+    isExiting = false;
     document.getElementById('v-home').classList.remove('active');
     document.getElementById('v-room').classList.add('active');
     window.history.pushState({}, '', `?room=${activeRoom}`);
@@ -282,7 +283,6 @@ window.cancelWaiting = () => {
 };
 
 function startRoom() {
-    isExiting = false;
     roomRef = ref(db, `rooms/${activeRoom}/users/${user.id}`);
     set(roomRef, { code: user.code, peerId: myPeerId, online: true, isMuted: false, handRaised: false });
     onDisconnect(roomRef).remove();
@@ -296,8 +296,10 @@ function startRoom() {
         if (user.id === roomOwnerId) listenForAdmissionRequests();
     });
     onValue(ref(db, `rooms/${activeRoom}/users`), (snap) => {
+        if (isExiting) return;
         const users = snap.val() || {};
-        if (!isExiting && document.getElementById('v-room').classList.contains('active') && !users[user.id]) {
+        if (document.getElementById('v-room').classList.contains('active') && !users[user.id]) {
+            isExiting = true;
             showToast("⛔ تم إزالتك من الغرفة");
             setTimeout(exitToMenu, 1000);
             return;
