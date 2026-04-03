@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue, remove, onDisconnect, get, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, update, onValue, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjE-2q6PONBkCin9ZN22gDp9Q8pAH9ZW8",
@@ -14,373 +14,293 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// Authentication & Identity
 let user = JSON.parse(localStorage.getItem('vf_user'));
 if (!user) {
     user = { id: 'u' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5), code: Math.floor(100 + Math.random() * 900) };
     localStorage.setItem('vf_user', JSON.stringify(user));
 }
 
+// Global State
 let localStream, peer, myPeerId, activeRoom;
 let audioCtx, audioSource, audioDestination, currentFilter;
-let isMuted = false, handRaised = false, speakerMode = true;
+let isMuted = false;
 let calls = {};
 let roomRef = null;
 let deferredPrompt;
 let roomOwnerId = null;
 let knownPeers = new Set();
-let currentTranslations = {};
-let roomTimerInterval = null;
-let roomStartTime = null;
-let pendingAdmissionRef = null;
-let isAppInstalled = false;
-let isExiting = false;
+let currentTranslations = {}; 
 
+// Event Listeners
 window.addEventListener('langChanged', (e) => {
     currentTranslations = e.detail.t;
     updateDynamicText();
 });
 
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    showInstallPrompt();
+// PWA Setup
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw (3).js').catch(console.log); }
+window.addEventListener('beforeinstallprompt', (e) => { 
+    e.preventDefault(); 
+    deferredPrompt = e; 
+    setTimeout(() => {
+        document.getElementById('install-popup').classList.add('show');
+    }, 2000);
 });
-
-window.addEventListener('appinstalled', () => {
-    isAppInstalled = true;
-    document.getElementById('install-popup').classList.remove('show');
-    document.getElementById('install-mini-banner').classList.remove('show');
-    showToast("✅ تم تثبيت التطبيق بنجاح!");
-});
-
-function showInstallPrompt() {
-    if (isAppInstalled) return;
-    document.getElementById('install-popup').classList.add('show');
-    startInstallReminders();
-}
-
-let installReminderInterval = null;
-function startInstallReminders() {
-    if (installReminderInterval) return;
-    installReminderInterval = setInterval(() => {
-        if (isAppInstalled || !deferredPrompt) {
-            clearInterval(installReminderInterval);
-            return;
-        }
-        const popup = document.getElementById('install-popup');
-        if (!popup.classList.contains('show')) {
-            document.getElementById('install-mini-banner').classList.add('show');
-        }
-    }, 180000);
-}
 
 window.triggerInstall = async () => {
     if (deferredPrompt) {
         deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') isAppInstalled = true;
+        await deferredPrompt.userChoice;
         deferredPrompt = null;
         document.getElementById('install-popup').classList.remove('show');
-        document.getElementById('install-mini-banner').classList.remove('show');
     }
 };
+window.closeInstallPopup = () => document.getElementById('install-popup').classList.remove('show');
 
-window.closeInstallPopup = () => {
-    document.getElementById('install-popup').classList.remove('show');
-    setTimeout(() => {
-        if (!isAppInstalled && deferredPrompt) {
-            document.getElementById('install-mini-banner').classList.add('show');
-        }
-    }, 5000);
-};
-
+// Initialization
 window.onload = () => {
     const urlRoom = new URLSearchParams(location.search).get('room');
-    if (urlRoom) {
-        activeRoom = urlRoom;
-        localStorage.setItem('last_room', activeRoom);
-        document.getElementById('audio-gate').classList.add('show');
+    if(urlRoom) { 
+        activeRoom = urlRoom; 
+        localStorage.setItem('last_room', activeRoom); 
+        document.getElementById('audio-gate').classList.add('show'); 
     }
     updateUI();
 };
 
+// UI Updaters
 function updateDynamicText() {
-    const prefix = currentTranslations.idPrefix || "معرفك: ";
-    document.getElementById('id-text').innerHTML = `<span class="status-dot"></span> ${prefix}${user.code}`;
+    const prefix = currentTranslations.idPrefix || "ID: ";
+    document.getElementById('id-text').innerHTML = `${prefix}${user.code}`;
+    
     const last = localStorage.getItem('last_room');
-    if (last) {
-        const roomPre = currentTranslations.roomPrefix || "غرفة: ";
-        document.getElementById('last-room-txt').innerText = roomPre + last;
+    if(last) {
+        const roomPre = currentTranslations.roomPrefix || "#";
+        document.getElementById('last-room-txt').innerText = roomPre + last + " - " + (currentTranslations.rejoinDesc || "Resume session");
     }
 }
 
 function updateUI() {
     const last = localStorage.getItem('last_room');
     const btn = document.getElementById('btn-rejoin');
-    if (last) {
-        btn.style.opacity = '1';
+    if(last) { 
+        btn.style.opacity = '1'; 
         btn.style.pointerEvents = 'all';
-        const roomPre = currentTranslations.roomPrefix || "غرفة: ";
-        document.getElementById('last-room-txt').innerText = roomPre + last;
-    } else {
-        btn.style.opacity = '0.4';
+        const roomPre = currentTranslations.roomPrefix || "#";
+        document.getElementById('last-room-txt').innerText = roomPre + last + " - " + (currentTranslations.rejoinDesc || "Resume session");
+        btn.onclick = rejoinLastRoom; 
+    } else { 
+        btn.style.opacity = '0.4'; 
         btn.style.pointerEvents = 'none';
     }
-    setTimeout(updateDynamicText, 100);
+    setTimeout(updateDynamicText, 100); 
 }
 
+// Global Toasts / Notifications
 let toastTimeout;
-window.showToast = (msg) => {
+window.showToast = (msg, icon = 'fa-info-circle') => {
     const container = document.getElementById('toast-container');
     container.innerHTML = '';
     clearTimeout(toastTimeout);
+    
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerText = msg;
+    toast.innerHTML = `<i class="fas ${icon}"></i> <span>${msg}</span>`;
+    
     container.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
+    
     toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-        setTimeout(() => { if (toast.parentElement) toast.remove(); }, 300);
-    }, 2500);
+        setTimeout(() => { if(toast.parentElement) toast.remove(); }, 300);
+    }, 3000);
 };
 
-window.openShareSheet = () => { document.getElementById('share-overlay').classList.add('show'); document.getElementById('share-sheet').classList.add('show'); };
-window.closeShareSheet = () => { document.getElementById('share-overlay').classList.remove('show'); document.getElementById('share-sheet').classList.remove('show'); };
+// Share Sheet Logic
+window.openShareSheet = () => { 
+    document.getElementById('share-overlay').classList.add('show'); 
+    document.getElementById('share-sheet').classList.add('show'); 
+};
+window.closeShareSheet = () => { 
+    document.getElementById('share-overlay').classList.remove('show'); 
+    document.getElementById('share-sheet').classList.remove('show'); 
+};
 
 window.copyLinkAction = () => {
     const link = `${location.origin}${location.pathname}?room=${activeRoom}`;
-    navigator.clipboard.writeText(link).then(() => { showToast("✅ تم نسخ رابط الغرفة"); closeShareSheet(); });
-};
-
-window.openAddParticipant = () => {
-    const link = `${location.origin}${location.pathname}?room=${activeRoom}`;
-    if (navigator.share) {
-        navigator.share({ title: 'منبر الأحرار', text: 'انضم للنقاش الصوتي!', url: link });
-    } else {
-        openShareSheet();
-    }
+    navigator.clipboard.writeText(link).then(() => { 
+        showToast("Link Copied Successfully", "fa-check-circle"); 
+        closeShareSheet(); 
+    });
 };
 
 window.shareTo = (platform) => {
     const link = `${location.origin}${location.pathname}?room=${activeRoom}`;
-    const text = `انضم للنقاش في منبر الأحرار: `;
+    const text = `Join my live audio broadcast on Atheer: `;
     const urls = {
         whatsapp: `https://wa.me/?text=${encodeURIComponent(text + link)}`,
         telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`,
         facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
     };
-    if (urls[platform]) window.open(urls[platform], '_blank');
+    if(urls[platform]) window.open(urls[platform], '_blank');
     closeShareSheet();
 };
 
-window.createNewRoom = () => {
-    activeRoom = Math.random().toString(36).substr(2, 6).toUpperCase();
-    localStorage.setItem('last_room', activeRoom);
+// Room Management
+window.createNewRoom = () => { 
+    activeRoom = Math.random().toString(36).substr(2, 6).toUpperCase(); 
+    localStorage.setItem('last_room', activeRoom); 
     set(ref(db, `rooms/${activeRoom}/owner`), user.id);
-    set(ref(db, `rooms/${activeRoom}/settings`), { admissionRequired: true });
-    document.getElementById('audio-gate').classList.add('show');
+    document.getElementById('audio-gate').classList.add('show'); 
 };
 
-window.rejoinLastRoom = () => {
-    activeRoom = localStorage.getItem('last_room');
-    if (activeRoom) document.getElementById('audio-gate').classList.add('show');
+window.rejoinLastRoom = () => { 
+    activeRoom = localStorage.getItem('last_room'); 
+    document.getElementById('audio-gate').classList.add('show'); 
 };
+
+// Audio Setup
+const joinSound = new Audio("data:audio/mp3;base64,//uQRAAAAWMSLwUIYAPAAAAAAAAAAAAAFhpZgAAgiXYAD//uQRAAAAWMSLwUIYAPAAAAAAAAAAAAAFhpZgAAgiXYAD//uQRAAAAWMSLwUIYAPAAAAAAAAAAAAAFhpZgAAgiXYAD//uQZAAAAzgLgAAAAABBQAAABCRU5E");
+joinSound.volume = 0.5;
 
 window.confirmEntry = async () => {
     try {
+        const btn = document.getElementById('gate-btn');
+        const origText = btn.innerText;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        localStream = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: { ideal: true }, noiseSuppression: { ideal: true }, autoGainControl: { ideal: true }, channelCount: 1 },
-            video: false
+        if(audioCtx.state === 'suspended') await audioCtx.resume();
+        
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+            audio: { 
+                echoCancellation: { ideal: true },
+                noiseSuppression: { ideal: true },
+                autoGainControl: { ideal: true },
+                channelCount: 1
+            },
+            video: false 
         });
+
         audioSource = audioCtx.createMediaStreamSource(localStream);
         audioDestination = audioCtx.createMediaStreamDestination();
         audioSource.connect(audioDestination);
-        peer = new Peer(user.id, {
+        
+        const peerConfig = {
             debug: 0,
             config: {
-                iceServers:[
-                    { urls: "stun:stun.relay.metered.ca:80" },
-                    { urls: "turn:global.relay.metered.ca:80", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" },
-                    { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" },
-                    { urls: "turn:global.relay.metered.ca:443", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" },
-                    { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" }
+                iceServers: [
+                  { urls: "stun:stun.relay.metered.ca:80" },
+                  { urls: "turn:global.relay.metered.ca:80", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" },
+                  { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" },
+                  { urls: "turn:global.relay.metered.ca:443", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" },
+                  { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "14d6a892afc9dbe41c8e0de2", credential: "jWoQ1RL0jVlh/dNY" }
                 ]
             }
+        };
+
+        peer = new Peer(user.id, peerConfig);
+
+        peer.on('open', id => { 
+            myPeerId = id; 
+            btn.innerText = origText;
+            startRoom(); 
         });
-        peer.on('open', async (id) => {
-            myPeerId = id;
-            const ownerSnap = await get(ref(db, `rooms/${activeRoom}/owner`));
-            const owner = ownerSnap.exists() ? ownerSnap.val() : null;
-            if (owner && owner !== user.id) {
-                const settingsSnap = await get(ref(db, `rooms/${activeRoom}/settings`));
-                const settings = settingsSnap.exists() ? settingsSnap.val() : {};
-                if (settings.admissionRequired) {
-                    document.getElementById('audio-gate').classList.remove('show');
-                    document.getElementById('waiting-room').classList.add('show');
-                    const reqRef = push(ref(db, `rooms/${activeRoom}/requests`));
-                    set(reqRef, { userId: user.id, code: user.code, status: 'pending' });
-                    pendingAdmissionRef = reqRef;
-                    onValue(reqRef, (snap) => {
-                        const data = snap.val();
-                        if (!data) return;
-                        if (data.status === 'accepted') {
-                            document.getElementById('waiting-room').classList.remove('show');
-                            enterRoom();
-                        } else if (data.status === 'rejected') {
-                            document.getElementById('waiting-room').classList.remove('show');
-                            showToast("❌ تم رفض طلبك");
-                            cleanupAndGoHome();
-                        }
-                    });
-                    return;
-                }
-            }
-            document.getElementById('audio-gate').classList.remove('show');
-            enterRoom();
-        });
+        
         peer.on('call', call => {
             call.answer(audioDestination.stream);
             call.on('stream', stream => handleRemoteStream(stream, call.peer));
             calls[call.peer] = call;
         });
-        peer.on('error', err => {
-            if (err.type === 'peer-unavailable') showToast("المستخدم غير متاح");
-            else showToast("جاري إعادة الاتصال...");
+        
+        peer.on('error', err => { 
+            console.error(err); 
+            btn.innerText = origText;
+            if(err.type === 'peer-unavailable') {
+                showToast("User disconnected", "fa-user-slash");
+            } else {
+                showToast("Connection Error. Retrying...", "fa-exclamation-triangle"); 
+            }
         });
-    } catch (e) {
-        showToast("يرجى السماح بالوصول للميكروفون");
+
+        document.getElementById('audio-gate').classList.remove('show');
+        document.getElementById('current-room-display').innerText = activeRoom;
+        
+        // Transition Views
+        document.getElementById('v-home').classList.remove('active');
+        setTimeout(() => {
+            document.getElementById('v-room').classList.add('active');
+        }, 100);
+        
+        window.history.pushState({}, '', `?room=${activeRoom}`);
+        
+        knownPeers.clear();
+        knownPeers.add(user.id);
+
+    } catch(e) { 
+        console.error(e);
+        document.getElementById('gate-btn').innerHTML = 'الدخول للمساحة';
+        showToast("Microphone access denied", "fa-microphone-slash"); 
     }
-};
-
-function enterRoom() {
-    isExiting = false;
-    document.getElementById('v-home').classList.remove('active');
-    document.getElementById('v-room').classList.add('active');
-    window.history.pushState({}, '', `?room=${activeRoom}`);
-    knownPeers.clear();
-    knownPeers.add(user.id);
-    startRoom();
-    startRoomTimer();
-}
-
-function cleanupAndGoHome() {
-    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-    if (peer) { peer.destroy(); peer = null; }
-    calls = {}; myPeerId = null; activeRoom = null;
-    document.getElementById('v-room').classList.remove('active');
-    document.getElementById('v-home').classList.add('active');
-}
-
-window.cancelWaiting = () => {
-    document.getElementById('waiting-room').classList.remove('show');
-    if (pendingAdmissionRef) remove(pendingAdmissionRef);
-    cleanupAndGoHome();
 };
 
 function startRoom() {
     roomRef = ref(db, `rooms/${activeRoom}/users/${user.id}`);
-    set(roomRef, { code: user.code, peerId: myPeerId, online: true, isMuted: false, handRaised: false });
+    set(roomRef, { code: user.code, peerId: myPeerId, online: true, isMuted: false });
     onDisconnect(roomRef).remove();
+
     get(ref(db, `rooms/${activeRoom}/owner`)).then((snap) => {
-        if (snap.exists()) {
+        if(snap.exists()) {
             roomOwnerId = snap.val();
         } else {
             set(ref(db, `rooms/${activeRoom}/owner`), user.id);
             roomOwnerId = user.id;
         }
-        if (user.id === roomOwnerId) listenForAdmissionRequests();
     });
+
     onValue(ref(db, `rooms/${activeRoom}/users`), (snap) => {
-        if (isExiting) return;
         const users = snap.val() || {};
+        
         if (document.getElementById('v-room').classList.contains('active') && !users[user.id]) {
-            isExiting = true;
-            showToast("⛔ تم إزالتك من الغرفة");
-            setTimeout(exitToMenu, 1000);
+            showToast("You were removed from the room", "fa-user-times");
+            setTimeout(exitToMenu, 1500);
             return;
         }
+
         Object.keys(users).forEach(uid => {
             if (!knownPeers.has(uid)) {
                 knownPeers.add(uid);
-                try { document.getElementById('join-sound').play().catch(() => {}); } catch (e) { }
+                try {
+                    document.getElementById('join-sound').play().catch(e => console.log(e));
+                } catch(e) {}
+                showToast(`User ${users[uid].code} joined`, "fa-user-plus");
             }
         });
-        document.getElementById('participants-count').innerText = Object.keys(users).length;
+
         renderUsers(users);
         Object.values(users).forEach(u => {
-            if (u.peerId !== myPeerId && !calls[u.peerId]) {
+            if(u.peerId !== myPeerId && !calls[u.peerId]) {
                 const call = peer.call(u.peerId, audioDestination.stream);
                 call.on('stream', stream => handleRemoteStream(stream, u.peerId));
                 calls[u.peerId] = call;
             }
         });
     });
-    onValue(ref(db, `rooms/${activeRoom}/emojis`), (snap) => {
-        const emojis = snap.val();
-        if (!emojis) return;
-        Object.entries(emojis).forEach(([key, data]) => {
-            if (data.userId !== user.id && Date.now() - data.timestamp < 3000) {
-                floatEmoji(data.emoji);
-            }
-        });
-    });
-}
-
-function listenForAdmissionRequests() {
-    onValue(ref(db, `rooms/${activeRoom}/requests`), (snap) => {
-        const requests = snap.val() || {};
-        Object.entries(requests).forEach(([key, req]) => {
-            if (req.status === 'pending') {
-                showAdmissionPopup(key, req);
-            }
-        });
-    });
-}
-
-function showAdmissionPopup(key, req) {
-    const popup = document.getElementById('admission-popup');
-    document.getElementById('admission-name').innerText = `مستخدم #${req.code}`;
-    popup.dataset.key = key;
-    popup.classList.add('show');
-}
-
-window.handleAdmission = (accept) => {
-    const popup = document.getElementById('admission-popup');
-    const key = popup.dataset.key;
-    update(ref(db, `rooms/${activeRoom}/requests/${key}`), { status: accept ? 'accepted' : 'rejected' });
-    popup.classList.remove('show');
-    showToast(accept ? "✅ تمت الموافقة" : "❌ تم الرفض");
-    setTimeout(() => remove(ref(db, `rooms/${activeRoom}/requests/${key}`)), 5000);
-};
-
-function startRoomTimer() {
-    roomStartTime = Date.now();
-    const timerEl = document.getElementById('room-timer');
-    if (roomTimerInterval) clearInterval(roomTimerInterval);
-    roomTimerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - roomStartTime) / 1000);
-        const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
-        const secs = (elapsed % 60).toString().padStart(2, '0');
-        timerEl.innerText = `${mins}:${secs}`;
-    }, 1000);
 }
 
 window.kickUser = (targetUserId) => {
-    if (confirm("طرد هذا المستخدم؟")) {
+    if(confirm("Remove this user from the broadcast?")) {
         remove(ref(db, `rooms/${activeRoom}/users/${targetUserId}`))
-            .then(() => showToast("تم طرد المستخدم"))
-            .catch(()=>{});
+        .then(() => showToast("User removed", "fa-user-minus"))
+        .catch(e => console.error(e));
     }
 };
 
+// WebRTC Audio Handling
 function handleRemoteStream(stream, peerId) {
     let audio = document.getElementById('audio-' + peerId);
-    if (!audio) {
+    if(!audio) {
         audio = document.createElement('audio');
         audio.id = 'audio-' + peerId;
         audio.autoplay = true;
@@ -388,134 +308,148 @@ function handleRemoteStream(stream, peerId) {
         document.getElementById('audio-container').appendChild(audio);
     }
     audio.srcObject = stream;
-    audio.play().catch(() => {});
+    
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.log("Audio play failed, retrying...");
+        });
+    }
+
     try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
         const remoteCtx = new (window.AudioContext || window.webkitAudioContext)();
         const source = remoteCtx.createMediaStreamSource(stream);
         monitorVolume(source, peerId, remoteCtx);
-    } catch (e) { }
+    } catch(e) { console.log(e); }
 }
 
+// Voice Activity Detection (VAD)
 function monitorVolume(source, id, context) {
     const analyser = context.createAnalyser();
     analyser.fftSize = 64;
-    analyser.smoothingTimeConstant = 0.5;
+    analyser.smoothingTimeConstant = 0.6;
     source.connect(analyser);
     const data = new Uint8Array(analyser.frequencyBinCount);
+    
     const check = () => {
-        if (!document.getElementById('v-room').classList.contains('active')) return;
+        if(!document.getElementById('v-room').classList.contains('active')) return;
         analyser.getByteFrequencyData(data);
-        const vol = data.reduce((a, b) => a + b) / data.length;
-        const wave = document.getElementById('wave-' + id);
-        const card = document.getElementById('card-' + id);
-        if (wave) {
-            if (vol > 10) { wave.classList.add('speaking'); if (card) card.classList.add('speaking-active'); }
-            else { wave.classList.remove('speaking'); if (card) card.classList.remove('speaking-active'); }
+        const vol = data.reduce((a,b) => a+b) / data.length;
+        
+        const waveContainer = document.getElementById('wave-' + id);
+        const userCard = document.getElementById('card-' + id);
+        
+        if(waveContainer && userCard) {
+            if(vol > 15) { // Sensitivity Threshold
+                waveContainer.classList.add('speaking');
+                userCard.classList.add('active-speaker');
+                // Dynamically adjust wave scales based on volume
+                const scales = [
+                    1 + (vol/255)*0.5,
+                    1 + (vol/255)*1.2,
+                    1 + (vol/255)*1.8,
+                    1 + (vol/255)*1.2,
+                    1 + (vol/255)*0.5
+                ];
+                const bars = waveContainer.children;
+                for(let i=0; i<bars.length; i++) {
+                    if (bars[i]) {
+                        bars[i].style.transform = `scaleY(${scales[i]})`;
+                        bars[i].style.opacity = Math.min(1, 0.4 + vol/100);
+                    }
+                }
+            } else {
+                waveContainer.classList.remove('speaking');
+                userCard.classList.remove('active-speaker');
+                const bars = waveContainer.children;
+                for(let i=0; i<bars.length; i++) {
+                    if (bars[i]) {
+                        bars[i].style.transform = `scaleY(1)`;
+                        bars[i].style.opacity = '';
+                    }
+                }
+            }
         }
         requestAnimationFrame(check);
     };
     check();
 }
 
+// UI Rendering
 function renderUsers(users) {
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
     const list = Object.entries(users);
-    grid.className = 'grid-container ' + (list.length <= 1 ? 'layout-1' : list.length === 2 ? 'layout-2' : 'layout-more');
+    
+    // Smooth Layout Transitions
+    grid.className = 'grid-container fade-in ' + (list.length <= 1 ? 'layout-1' : list.length === 2 ? 'layout-2' : 'layout-more');
+    
     const isOwner = (user.id === roomOwnerId);
-    const meTxt = currentTranslations.me || "أنت";
-    const spkTxt = currentTranslations.speaker || "متحدث";
-    list.forEach(([uid, u], idx) => {
+    const meTxt = currentTranslations.me || "You (Live)";
+    const spkTxt = currentTranslations.speaker || "Atheer Voice";
+
+    list.forEach(([uid, u]) => {
         const isMe = u.peerId === myPeerId;
         const muteBadge = u.isMuted ? '<div class="mute-badge"><i class="fas fa-microphone-slash"></i></div>' : '';
-        const kickBtn = (isOwner && !isMe) ? `<div class="kick-btn" onclick="kickUser('${uid}')"><i class="fas fa-times"></i></div>` : '';
-        const handBadge = u.handRaised ? '<div class="hand-raised-badge">✋</div>' : '';
-        const initials = u.code;
+        
+        const kickBtn = (isOwner && !isMe) ? 
+            `<div class="kick-btn" onclick="kickUser('${uid}')" title="Remove User"><i class="fas fa-times"></i></div>` : '';
+
         grid.innerHTML += `
-            <div class="user-card" id="card-${u.peerId}" style="animation-delay:${idx * 0.08}s">
+            <div class="user-card" id="card-${u.peerId}">
                 ${kickBtn}
-                ${handBadge}
                 <div class="card-avatar">
-                    <div class="avatar-ring"></div>
-                    ${initials}
+                    ${u.code}
                     ${muteBadge}
                 </div>
+                <!-- Fluid 5-bar Wave UI -->
                 <div class="voice-wave-container" id="wave-${u.peerId}">
-                    <div class="wave-bar"></div><div class="wave-bar"></div>
-                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
                 </div>
-                <div class="user-label">${isMe ? meTxt : spkTxt}</div>
+                <div class="card-label">${isMe ? meTxt : spkTxt}</div>
             </div>
         `;
     });
-    if (audioSource) monitorVolume(audioSource, myPeerId, audioCtx);
+    if(audioSource) monitorVolume(audioSource, myPeerId, audioCtx);
 }
 
+// User Actions
 window.toggleMic = () => {
     isMuted = !isMuted;
-    if (localStream) localStream.getAudioTracks()[0].enabled = !isMuted;
-    if (roomRef) update(roomRef, { isMuted });
+    if(localStream) localStream.getAudioTracks()[0].enabled = !isMuted;
+    if(roomRef) { update(roomRef, { isMuted: isMuted }); }
+
     const btn = document.getElementById('mic-btn');
-    btn.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-    if (isMuted) btn.classList.remove('active'); else btn.classList.add('active');
-    showToast(isMuted ? "🔇 تم كتم الصوت" : "🔊 تم تفعيل الصوت");
-};
-
-window.toggleHandRaise = () => {
-    handRaised = !handRaised;
-    if (roomRef) update(roomRef, { handRaised });
-    const btn = document.getElementById('hand-btn');
-    if (handRaised) btn.classList.add('hand-active'); else btn.classList.remove('hand-active');
-    showToast(handRaised ? "✋ رفعت يدك" : "✋ أنزلت يدك");
-};
-
-window.toggleEmojiBar = () => {
-    document.getElementById('emoji-bar').classList.toggle('show');
-};
-
-window.sendEmoji = (emoji) => {
-    floatEmoji(emoji);
-    const emojiRef = push(ref(db, `rooms/${activeRoom}/emojis`));
-    set(emojiRef, { emoji, userId: user.id, timestamp: Date.now() });
-    setTimeout(() => remove(emojiRef), 4000);
-};
-
-function floatEmoji(emoji) {
-    const el = document.createElement('div');
-    el.className = 'emoji-float';
-    el.innerText = emoji;
-    el.style.left = (20 + Math.random() * 60) + '%';
-    el.style.bottom = '180px';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2200);
-}
-
-window.toggleSpeaker = () => {
-    speakerMode = !speakerMode;
-    const btn = document.getElementById('speaker-btn');
-    btn.innerHTML = speakerMode ? '<i class="fas fa-volume-high"></i>' : '<i class="fas fa-volume-xmark"></i>';
-    const audios = document.querySelectorAll('#audio-container audio');
-    audios.forEach(a => a.muted = !speakerMode);
-    showToast(speakerMode ? "🔊 مكبر الصوت" : "🔇 صامت");
+    if(isMuted) {
+        btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+        btn.classList.remove('active');
+        btn.style.color = '#ff5555';
+    } else {
+        btn.innerHTML = '<div class="btn-glow"></div><i class="fas fa-microphone"></i>';
+        btn.classList.add('active');
+        btn.style.color = '#000';
+    }
+    showToast(isMuted ? "Microphone Muted" : "Microphone Active", isMuted ? "fa-microphone-slash" : "fa-microphone");
 };
 
 window.exitToMenu = () => {
-    isExiting = true;
     if (roomRef) remove(roomRef);
-    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     if (peer) { peer.destroy(); peer = null; }
-    if (roomTimerInterval) { clearInterval(roomTimerInterval); roomTimerInterval = null; }
-    calls = {}; myPeerId = null; activeRoom = null; isMuted = false; handRaised = false;
+    
+    calls = {}; myPeerId = null; activeRoom = null; isMuted = false;
     document.getElementById('audio-container').innerHTML = '';
-    document.getElementById('emoji-bar').classList.remove('show');
-    const handBtn = document.getElementById('hand-btn');
-    if (handBtn) handBtn.classList.remove('hand-active');
-    const micBtn = document.getElementById('mic-btn');
-    if (micBtn) { micBtn.innerHTML = '<i class="fas fa-microphone"></i>'; micBtn.classList.add('active'); }
-    document.getElementById('room-timer').innerText = '00:00';
+    
     document.getElementById('v-room').classList.remove('active');
-    document.getElementById('v-home').classList.add('active');
+    setTimeout(() => {
+        document.getElementById('v-home').classList.add('active');
+    }, 100);
+    
     window.history.replaceState({}, document.title, window.location.pathname);
     updateUI();
 };
@@ -526,30 +460,25 @@ window.applyFilter = (type, el) => {
     document.querySelectorAll('.filter-opt').forEach(opt => opt.classList.remove('selected'));
     el.classList.add('selected');
     document.getElementById('filter-menu').classList.remove('show');
+    
     audioSource.disconnect();
-    if (currentFilter) { currentFilter.disconnect(); currentFilter = null; }
-    if (type === 'none') {
+    if(currentFilter) { currentFilter.disconnect(); currentFilter = null; }
+    
+    if(type === 'none') {
         audioSource.connect(audioDestination);
-    } else if (type === 'deep') {
-        const f = audioCtx.createBiquadFilter();
-        f.type = 'lowshelf'; f.frequency.value = 200; f.gain.value = 10;
+        showToast("Studio Mode Active", "fa-music");
+    } else if(type === 'deep') {
+        const f = audioCtx.createBiquadFilter(); 
+        f.type = 'lowshelf'; f.frequency.value = 250; f.gain.value = 12;
         audioSource.connect(f); f.connect(audioDestination); currentFilter = f;
-    } else if (type === 'echo') {
-        const delay = audioCtx.createDelay(); delay.delayTime.value = 0.15;
-        const feedback = audioCtx.createGain(); feedback.gain.value = 0.2;
+        showToast("Podcast Filter Active", "fa-podcast");
+    } else if(type === 'echo') {
+        const delay = audioCtx.createDelay(); delay.delayTime.value = 0.2;
+        const feedback = audioCtx.createGain(); feedback.gain.value = 0.25;
         delay.connect(feedback); feedback.connect(delay);
         audioSource.connect(audioDestination);
         audioSource.connect(delay); delay.connect(audioDestination);
         currentFilter = delay;
-    } else if (type === 'robot') {
-        const osc = audioCtx.createOscillator();
-        const oscGain = audioCtx.createGain();
-        osc.frequency.value = 50; oscGain.gain.value = 50;
-        osc.connect(oscGain);
-        const mod = audioCtx.createGain();
-        audioSource.connect(mod); oscGain.connect(mod.gain);
-        mod.connect(audioDestination); osc.start();
-        currentFilter = { disconnect: () => { osc.stop(); mod.disconnect(); } };
+        showToast("Amphitheater Filter Active", "fa-building-columns");
     }
-    showToast("🎙️ تم تطبيق الفلتر");
 };
